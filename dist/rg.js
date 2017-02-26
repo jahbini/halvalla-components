@@ -41,7 +41,6 @@ function toBoolean(bool) {
 riot.tag("rg-markdown", "", "", "", function(opts) {
     var _this = this;
     var md;
-    console.log("In markdown tag...") ;
 
     var callback = function callback() {
         if (markdownit) {
@@ -49,7 +48,6 @@ riot.tag("rg-markdown", "", "", "", function(opts) {
             //          _this.reader = new commonmark.parse;
             //          _this.writer = new commonmark.renderer
         }
-        console.log("In markdown callback...") ;
 
         if (!opts.markdown) opts.markdown = {};
         if (opts.markdown.content) {
@@ -105,11 +103,14 @@ riot.tag("rg-markdown", "", "", "", function(opts) {
 
 
 riot.tag("rg-accordion",
-    '<div class="c-card c-card--accordion" each="{item, index in opts.accordion.panels}">' +
-    '     <input type="checkbox" ref="accordion-ref{index}" id="accordion-{index}" onclick="{notify}">' +
+    '<div class="c-card c-card--accordion u-high">' +
+    '   <virtual each="{item, index in opts.accordion.panels}">'+
+    '     <input type="checkbox" id="accordion-{index}" onclick="{notify}">' +
     '     <label class="c-card__item" for="accordion-{index}">{item.title}</label>' +
-    '     <div class="c-accordion-content c-card__item"><rg-markdown content="{item.content}"></rg-markdown></div>' +
-    '</div>', '.c-accordion-content {padding-left: 2em;}',
+    '     <div class="c-accordion-content c-card__item"><rg-markdown content="{item.content}"></rg-markdown><yield></div>' +
+    '   </virtual>'+
+    '</div>',
+    '.c-accordion-content {padding-left: 2em;}',
     function() {
       var _this = this ;
 
@@ -194,6 +195,87 @@ riot.tag("rg-alerts",
     '</rg-alert> </div>', "", "",
     function() {});
 
+
+
+// Avatar images and text
+riot.tag("rg-avatar",
+        '<div class="c-avatar c-avatar {\'u-\' + opts.avatar.size}" data-text={opts.avatar.text} onclick={clicked} style="cursor: pointer;">'+
+        '  <img class="c-avatar__img" show="{opts.avatar.image}" src="{opts.avatar.image}">'+
+        '  <img class="c-avatar__img" show="{opts.avatar.image2}" src="{opts.avatar.image2}">'+
+        '</div>',
+         "", "",
+        function() {
+          var self = this ;
+
+          updateOpts = function() {
+            if (self.opts.size) self.opts.avatar.size = self.opts.size ;
+
+            if (self.opts.text) self.opts.avatar.text = self.opts.text ;
+
+            if (self.opts.image) this.opts.avatar.image = self.opts.image ;
+
+            if (self.opts.image2) this.opts.avatar.image2 = self.opts.image2 ;
+            }
+
+          clicked = function(e) {
+          e.preventUpdate = true ;
+
+            av = {
+                 avatar: self.root.localName +'-'+ self._riot_id,
+                 size: (self.opts.size ? self.opts.size : self.opts.avatar.size),
+                 text: (self.opts.text ? self.opts.text : self.opts.avatar.text),
+                 image: (self.opts.image ? self.opts.image : self.opts.avatar.image)
+                 } ;
+
+            self.trigger("clicked", av) ;
+          }
+
+          self.on("before-mount", function(){
+
+              if (!self.opts.avatar) self.opts.avatar = {} ;
+
+              updateOpts() ;
+          }) ;
+
+        }) ;
+
+
+
+// Avatar images and text
+riot.tag("rg-badge",
+         '<span class="c-badge {\'c-badge--\' + opts.badge.type} {\'c-badge--rounded\':opts.badge.rounded} {\'c-badge--ghost\':opts.badge.ghost}" onclick={clicked}><yield /></span>',
+         "", "",
+        function() {
+          var self = this ;
+
+          updateOpts = function() {
+              if (self.opts.type) self.opts.badge.type = self.opts.type ;
+
+              if (self.opts.rounded) self.opts.badge.rounded = self.opts.rounded ;
+
+              if (self.opts.ghost) self.opts.badge.ghost = self.opts.ghost ;
+              }
+
+          clicked = function(e) {
+              e.preventUpdate = true ;
+              badge = {
+                      type: self.opts.badge.type,
+                      rounded: self.opts.badge.rounded,
+                      ghost: self.opts.badge.ghost
+                      } ;
+
+              console.log("badge clicked", self.opts) ;
+              self.trigger("clicked", badge) ;
+              }
+
+          self.on("before-mount", function(){
+
+             if (!self.opts.badge) self.opts.badge = {} ;
+
+            updateOpts() ;
+            }) ;
+
+        }) ;
 
 
 riot.tag("rg-bubble",
