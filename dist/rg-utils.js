@@ -1,6 +1,10 @@
-var rg_date_cdn_momentjs = "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js" ;
-var rg_credit_card_payment_fonts = "https://cdnjs.cloudflare.com/ajax/libs/paymentfont/1.1.2/css/paymentfont.min.css" ;
-var rg_markdown_cdn_markdown = "https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.3.0/markdown-it.min.js" ;
+// START: --- RG_UTILS code ------
+var rg_date_cdn_momentjs = "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js";
+
+//var rg_chart_cdn_chartjs = "https://cdn.jsdelivr.net/chart.js/1.0.2/Chart.min.js" ;
+var rg_chart_cdn_chartjs = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js";
+var rg_credit_card_payment_fonts = "https://cdnjs.cloudflare.com/ajax/libs/paymentfont/1.1.2/css/paymentfont.min.css";
+var rg_markdown_cdn_markdown = "https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.3.0/markdown-it.min.js";
 
 function loadJS(file, callback) {
     // DOM: Create the script element
@@ -16,19 +20,18 @@ function loadJS(file, callback) {
 }
 
 
-function toBoolean (bool) {
-  if (bool) {
-     if (typeof bool === "string") {
-        if (bool.toLowerCase() === "true" || bool.toLowerCase() === "false")
-           if (bool.toLowerCase() ==="true")
-              return true ;
-           else
-              return false ;
-        }
-     else if (typeof bool == "boolean")
-        return bool ;
-     }
-  else
-    return undefined ;
+function toBoolean(bool) {
+    if (bool) {
+        if (typeof bool === "string") {
+            if (bool.toLowerCase() === "true" || bool.toLowerCase() === "false")
+                if (bool.toLowerCase() === "true")
+                    return true;
+                else
+                    return false;
+        } else if (typeof bool == "boolean")
+            return bool;
+    } else
+        return undefined;
 
 }
+// END: --- RG_UTILS code ------
