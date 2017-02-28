@@ -4,19 +4,71 @@ var rg_date_cdn_momentjs = "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.1
 //var rg_chart_cdn_chartjs = "https://cdn.jsdelivr.net/chart.js/1.0.2/Chart.min.js" ;
 var rg_chart_cdn_chartjs = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js";
 var rg_credit_card_payment_fonts = "https://cdnjs.cloudflare.com/ajax/libs/paymentfont/1.1.2/css/paymentfont.min.css";
+
 var rg_markdown_cdn_markdown = "https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.3.0/markdown-it.min.js";
 
-function loadJS(file, callback) {
-    // DOM: Create the script element
+
+function loadCSS(file, callback, error) {
+    var _file = file ;
+    var loaded = document.querySelector('link[href="'+file+'"]') ;
+
+    if (loaded) {
+      loaded.onload = callback ;
+      loaded.onreadystatechange = callback;
+      return
+    }
+
+    var css = document.createElement("script");
+    css.type = "text/css";
+    css.rel = "stylesheet";
+    css.href = file;
+    script.onload = callback ;
+    loaded.onreadystatechange = callback;
+
+    if (error) {
+       css.onerror = error ;
+       }
+    else {
+       css.onerror = function(e) {
+              console.error("CSS File '" + _file + "' not found :-(");
+              };
+       }
+
+    document.head.appendChild(css);
+}
+
+
+function loadJS(file, callback, error, type) {
+    var _file = file ;
+    var loaded = document.querySelector('script[src="'+file+'"]') ;
+
+    if (loaded) {
+      loaded.onload = callback ;
+      loaded.onreadystatechange = callback;
+      return
+    }
+
     var script = document.createElement("script");
-    // set the type attribute
-    script.type = "application/javascript";
-    // make the script element load file
+
+    script.type = (typeof type ==="string" ? type : "application/javascript") ;
+
     script.src = file;
-    script.onload = callback;
+    script.async = false ;
+    script.defer = false ;
+    script.onload = callback ;
+
+    if (error) {
+       script.onerror = error ;
+       }
+    else {
+       script.onerror = function(e) {
+              console.error("Script File '" + _file + "' not found :-(");
+              };
+       }
+
     script.onreadystatechange = callback;
-    // finally insert the element to the body element in order to load the script
-    document.head.appendChild(script);
+
+    document.body.appendChild(script);
 }
 
 
@@ -39,40 +91,29 @@ function toBoolean(bool) {
 
 // Moved to top of file since accordion and other compents can use it.
 riot.tag("rg-markdown", "", "", "", function(opts) {
-    var _this = this;
+    var self = this ;
+    var markdownOK = !(typeof markdownit === "undefined");
     var md;
 
     var callback = function callback() {
-        if (markdownit) {
+        markdownOK = !(typeof markdownit === "undefined");
 
-            //          _this.reader = new commonmark.parse;
-            //          _this.writer = new commonmark.renderer
-        }
-
-        if (!opts.markdown) opts.markdown = {};
-        if (opts.markdown.content) {
+        if (!md && markdownOK && self.opts.markdown.content) {
             md = markdownit({
                 html: true,
                 linkify: true,
                 typographer: true
             });
 
-            //        _this.root.innerHTML = _this.writer.render(_this.reader.parse(opts.markdown.content))
-            _this.root.innerHTML = md.render(opts.markdown.content)
-        } else if (opts.markdown.url) {
-            (function() {
-                var req = new XMLHttpRequest;
-                req.onload = function(resp) {
-                    //                  _this.root.innerHTML = _this.writer.render(_this.reader.parse(req.responseText));
-                    _this.root.innerHTML = md.render(req.responseText);
-                    _this.trigger("loaded")
-                };
-                req.open("get", opts.markdown.url, true);
-                req.send();
-                _this.trigger("loading")
-            })()
+            if (markdownOK)
+               self.root.innerHTML = md.render(opts.markdown.content)
         }
     }
+
+    if ( ! markdownOK){
+        loadJS(rg_markdown_cdn_markdown, callback);
+        }
+
 
     this.on("before-mount", function() {
 
@@ -86,17 +127,22 @@ riot.tag("rg-markdown", "", "", "", function(opts) {
             opts.markdown.content = opts.content;
         }
 
-        if (this.__.innerHTML)
-            opts.markdown.content = this.__.innerHTML;
+        if (this.root.innerHTML)
+            opts.markdown.content = this.root.innerHTML;
+
+        if (!opts.markdown) opts.markdown = {};
+
+        // The library has been loaded by the user already
+        if (markdownOK)
+           callback() ;
+
     });
 
-    this.on("mount", function() {
 
-        if (typeof markdownit === "undefined")
-            loadJS(rg_markdown_cdn_markdown, callback);
-        else
-            callback();
-    });
+    this.on("update", function() {
+      callback() ;
+    }) ;
+
 
 });
 
@@ -104,39 +150,41 @@ riot.tag("rg-markdown", "", "", "", function(opts) {
 
 riot.tag("rg-accordion",
     '<div class="c-card c-card--accordion u-high">' +
-    '   <virtual each="{item, index in opts.accordion.panels}">'+
-    '     <input type="checkbox" id="accordion-{index}" onclick="{notify}">' +
+    '   <virtual each="{item, index in opts.accordion.panels}">' +
+    '     <input type="checkbox" id="accordion-{index}" {checked: item.open} onclick="{notify}">' +
     '     <label class="c-card__item" for="accordion-{index}">{item.title}</label>' +
     '     <div class="c-accordion-content c-card__item"><rg-markdown content="{item.content}"></rg-markdown><yield></div>' +
-    '   </virtual>'+
+    '   </virtual>' +
     '</div>',
     '.c-accordion-content {padding-left: 2em;}',
     function() {
-      var _this = this ;
+        var _this = this;
 
-      this.notify = function (e) {
-          not = {index: e.item.index,
-                 title: e.item.item.title,
-                 open: e.target.checked} ;
-         _this.trigger("notify", not) ;
-      } ;
+        this.notify = function(e) {
+            not = {
+                index: e.item.index,
+                title: e.item.item.title,
+                open: e.target.checked
+            };
+            _this.trigger("notify", not);
+        };
 
     });
 
 
 
-    riot.tag("rg-address",
-        '<address class="c-address">'+
-        '  <span class="c-address__heading">{opts.address.recipient}</span>'+
-        '  <div each="{addr in opts.address.lines}">'+
-        '     <span class="{\'c-address--road\':addr.road} {\'c-address--district\':addr.district} {\'c-address--town\':addr.town} {\'c-address--code\':addr.code} {\'c-address--state\':addr.state} {\'c-address--country\':addr.country}">{addr.line}<br></span>'+
-        '  </div>'+
-        '</address>',
-        '',
-        function() {
-          var _this = this ;
+riot.tag("rg-address",
+    '<address class="c-address">' +
+    '  <span class="c-address__heading">{opts.address.recipient}</span>' +
+    '  <div each="{addr in opts.address.lines}">' +
+    '     <span class="{\'c-address--road\':addr.road} {\'c-address--district\':addr.district} {\'c-address--town\':addr.town} {\'c-address--code\':addr.code} {\'c-address--state\':addr.state} {\'c-address--country\':addr.country}">{addr.line}<br></span>' +
+    '  </div>' +
+    '</address>',
+    '',
+    function() {
+        var _this = this;
 
-        });
+    });
 
 
 
@@ -144,7 +192,7 @@ riot.tag("rg-accordion",
 //TODO fix use of unmount
 riot.tag("rg-alert",
     '<div class="c-alert if={opts.type} {\'c-alert--\' + opts.type}"><button ref="closeButton" class="c-button c-button--close"' +
-    ' hide={opts.dismissable==false} onclick="{dismiss}">&times;</button>{opts.text}</div>', "", "",
+    ' hide={opts.dismissable==false} onclick="{dismiss}">&times;</button><rg-markdown content="{opts.text}"></rg-markdown></div>', "", "",
     function(opts) {
         var _this = this;
 
@@ -199,83 +247,82 @@ riot.tag("rg-alerts",
 
 // Avatar images and text
 riot.tag("rg-avatar",
-        '<div class="c-avatar c-avatar {\'u-\' + opts.avatar.size}" data-text={opts.avatar.text} onclick={clicked} style="cursor: pointer;">'+
-        '  <img class="c-avatar__img" show="{opts.avatar.image}" src="{opts.avatar.image}">'+
-        '  <img class="c-avatar__img" show="{opts.avatar.image2}" src="{opts.avatar.image2}">'+
-        '</div>',
-         "", "",
-        function() {
-          var self = this ;
+    '<div class="c-avatar c-avatar {\'u-\' + opts.avatar.size}" data-text={opts.avatar.text} onclick={clicked} style="cursor: pointer;">' +
+    '  <img class="c-avatar__img" show="{opts.avatar.image}" src="{opts.avatar.image}">' +
+    '  <img class="c-avatar__img" show="{opts.avatar.image2}" src="{opts.avatar.image2}">' +
+    '</div>',
+    "", "",
+    function() {
+        var self = this;
 
-          updateOpts = function() {
-            if (self.opts.size) self.opts.avatar.size = self.opts.size ;
+        updateOpts = function() {
+            if (self.opts.size) self.opts.avatar.size = self.opts.size;
 
-            if (self.opts.text) self.opts.avatar.text = self.opts.text ;
+            if (self.opts.text) self.opts.avatar.text = self.opts.text;
 
-            if (self.opts.image) this.opts.avatar.image = self.opts.image ;
+            if (self.opts.image) this.opts.avatar.image = self.opts.image;
 
-            if (self.opts.image2) this.opts.avatar.image2 = self.opts.image2 ;
-            }
+            if (self.opts.image2) this.opts.avatar.image2 = self.opts.image2;
+        }
 
-          clicked = function(e) {
-          e.preventUpdate = true ;
+        clicked = function(e) {
+            e.preventUpdate = true;
 
             av = {
-                 avatar: self.root.localName +'-'+ self._riot_id,
-                 size: (self.opts.size ? self.opts.size : self.opts.avatar.size),
-                 text: (self.opts.text ? self.opts.text : self.opts.avatar.text),
-                 image: (self.opts.image ? self.opts.image : self.opts.avatar.image)
-                 } ;
+                avatar: self.root.localName + '-' + self._riot_id,
+                size: (self.opts.size ? self.opts.size : self.opts.avatar.size),
+                text: (self.opts.text ? self.opts.text : self.opts.avatar.text),
+                image: (self.opts.image ? self.opts.image : self.opts.avatar.image)
+            };
 
-            self.trigger("clicked", av) ;
-          }
+            self.trigger("clicked", av);
+        }
 
-          self.on("before-mount", function(){
+        self.on("before-mount", function() {
 
-              if (!self.opts.avatar) self.opts.avatar = {} ;
+            if (!self.opts.avatar) self.opts.avatar = {};
 
-              updateOpts() ;
-          }) ;
+            updateOpts();
+        });
 
-        }) ;
+    });
 
 
 
 // Avatar images and text
 riot.tag("rg-badge",
-         '<span class="c-badge {\'c-badge--\' + opts.badge.type} {\'c-badge--rounded\':opts.badge.rounded} {\'c-badge--ghost\':opts.badge.ghost}" onclick={clicked}><yield /></span>',
-         "", "",
-        function() {
-          var self = this ;
+    '<span class="c-badge {\'c-badge--\' + opts.badge.type} {\'c-badge--rounded\':opts.badge.rounded} {\'c-badge--ghost\':opts.badge.ghost}" onclick={clicked}><yield /></span>',
+    "", "",
+    function() {
+        var self = this;
 
-          updateOpts = function() {
-              if (self.opts.type) self.opts.badge.type = self.opts.type ;
+        updateOpts = function() {
+            if (self.opts.type) self.opts.badge.type = self.opts.type;
 
-              if (self.opts.rounded) self.opts.badge.rounded = self.opts.rounded ;
+            if (self.opts.rounded) self.opts.badge.rounded = self.opts.rounded;
 
-              if (self.opts.ghost) self.opts.badge.ghost = self.opts.ghost ;
-              }
+            if (self.opts.ghost) self.opts.badge.ghost = self.opts.ghost;
+        }
 
-          clicked = function(e) {
-              e.preventUpdate = true ;
-              badge = {
-                      type: self.opts.badge.type,
-                      rounded: self.opts.badge.rounded,
-                      ghost: self.opts.badge.ghost
-                      } ;
+        clicked = function(e) {
+            badge = {
+                type: self.opts.badge.type,
+                rounded: self.opts.badge.rounded,
+                ghost: self.opts.badge.ghost
+            };
 
-              console.log("badge clicked", self.opts) ;
-              self.trigger("clicked", badge) ;
-              }
+            console.log("badge clicked", self.opts);
+            self.trigger("clicked", badge);
+        }
 
-          self.on("before-mount", function(){
+        self.on("before-mount", function() {
 
-             if (!self.opts.badge) self.opts.badge = {} ;
+            if (!self.opts.badge) self.opts.badge = {};
 
-            updateOpts() ;
-            }) ;
+            updateOpts();
+        });
 
-        }) ;
+    });
 
 
 riot.tag("rg-bubble",
@@ -358,6 +405,45 @@ riot.tag("rg-chart",
         }
     });
 
+// Based on code at: http://codepen.io/iprodev/full/azpWBr/ by Ham Chawroka
+riot.tag("rg-confetti", "", "", "",
+   function(opts){
+     var confcanv ;
+     var self = this ;
+
+      var callback = function callback(){
+
+      } ;
+
+      if (typeof confetti === "undefined"){
+         confcanv = this.root.querySelector('#rg-confetti') ;
+
+       if (!confcanv) {
+          confcanv = document.createElement('canvas') ;
+          confcanv.id = 'rg-confetti';
+          confcanv.width = 1 ;
+          confcanv.height = 1 ;
+
+          confcanv.style.left = 0 ;
+          confcanv.style.top = 0 ;
+
+          confcanv.style.width = '100%' ;
+          confcanv.style.height = '100%' ;
+
+          confcanv.style.position = 'absolute' ;
+          confcanv.style.display = 'auto' ;
+
+          confcanv.onclick = function() {
+                  confcanv.style.display = 'none' ;
+                  self.trigger("clciked", confcanv) ;
+                  } ;
+
+          document.body.appendChild(confcanv);
+          loadJS(opts.confetti.url, callback);
+          }
+
+         }
+});
 
 
 riot.tag2("rg-code",
