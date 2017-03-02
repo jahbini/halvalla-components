@@ -1,11 +1,17 @@
 // START: --- RG_UTILS code ------
-var rg_date_cdn_momentjs = "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js";
+var RG2_VERSION = "3.6.1" ;
+var RG2_INIT = false ;
+var RG2_BASE = Date.now() ;
 
-//var rg_chart_cdn_chartjs = "https://cdn.jsdelivr.net/chart.js/1.0.2/Chart.min.js" ;
-var rg_chart_cdn_chartjs = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js";
-var rg_credit_card_payment_fonts = "https://cdnjs.cloudflare.com/ajax/libs/paymentfont/1.1.2/css/paymentfont.min.css";
+var RG2_MKDN_RENDER ;
 
-var rg_markdown_cdn_markdown = "https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.3.0/markdown-it.min.js";
+var RG_DATE_CDN_MOMENTJS = "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js";
+
+//var RG_CHART_CDN_CHARTJS = "https://cdn.jsdelivr.net/chart.js/1.0.2/Chart.min.js" ;
+var RG_CHART_CDN_CHARTJS = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js";
+var RG_CREDIT_CARD_PAYMENT_FONTS = "https://cdnjs.cloudflare.com/ajax/libs/paymentfont/1.1.2/css/paymentfont.min.css";
+
+  var RG_MARKDOWN_CDN_MARKDOWN = "https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.3.0/markdown-it.min.js";
 
 
 function loadCSS(file, callback, error) {
@@ -86,87 +92,117 @@ function toBoolean(bool) {
         return undefined;
 
 }
+
+
+function toMarkdown (content, renderCallback) {
+  var markdownOK = !(typeof markdownit === "undefined");
+  RG2_MKDN_RENDER = (markdownOK ? markdownit({html: true, linkify: true, typographer: true}) : undefined ) ;
+  var _content = content ;
+
+
+  var callbackMkdn = function callbackMkdn() {
+      markdownOK = !(typeof markdownit === "undefined");
+
+      if (!RG2_MKDN_RENDER && markdownOK && _content) {
+          RG2_MKDN_RENDER = markdownit({
+              html: true,
+              linkify: true,
+              typographer: true
+          });
+
+          if (markdownOK) {
+             rendered = RG2_MKDN_RENDER.render(_content) ;
+
+             if (renderCallback)
+                renderCallback(rendered) ;
+
+             return rendered ;
+             }
+
+      }
+  }
+
+  if ( ! markdownOK)
+     loadJS(RG_MARKDOWN_CDN_MARKDOWN, callbackMkdn);
+  else {
+     rendered = RG2_MKDN_RENDER.render(_content) ;
+     console.log("markdown output:" + rendered) ;
+
+     if (renderCallback)
+        renderCallback(rendered) ;
+
+     return rendered ;
+     }
+
+}
+
+
+function RiotGearInit() {
+    if (RG2_INIT === true)
+       return ;
+
+    var localCB = function (text) {
+    console.log(text) ;
+    RG2_INIT = true ;
+    }
+
+ toMarkdown("**RG2** [" + RG2_VERSION + "] started", localCB) ;
+}
+
+document.addEventListener("DOMContentLoaded", function(event) {
+  RiotGearInit() ;
+});
+
 // END: --- RG_UTILS code ------
 
 
-// Moved to top of file since accordion and other compents can use it.
-riot.tag("rg-markdown", "", "", "", function(opts) {
-    var self = this ;
-    var markdownOK = !(typeof markdownit === "undefined");
-    var md;
 
-    var callback = function callback() {
-        markdownOK = !(typeof markdownit === "undefined");
+riot.tag("rg-html", '<span></span>', "", "",
+     function(opts) {
 
-        if (!md && markdownOK && self.opts.markdown.content) {
-            md = markdownit({
-                html: true,
-                linkify: true,
-                typographer: true
-            });
+          if (!opts.html) opts.html = {} ;
 
-            if (markdownOK)
-               self.root.innerHTML = md.render(opts.markdown.content)
-        }
-    }
+          if (!opts.html.content) opts.html.content = this.root._innerHTML ;
 
-    if ( ! markdownOK){
-        loadJS(rg_markdown_cdn_markdown, callback);
-        }
+          if (opts.content) opts.html.content = opts.content ;
 
-
-    this.on("before-mount", function() {
-
-        if (!opts.markdown) {
-            opts.markdown = {
-                content: (opts.content ? opts.content : "")
-            }
-        }
-
-        if (opts.content) {
-            opts.markdown.content = opts.content;
-        }
-
-        if (this.root.innerHTML)
-            opts.markdown.content = this.root.innerHTML;
-
-        if (!opts.markdown) opts.markdown = {};
-
-        // The library has been loaded by the user already
-        if (markdownOK)
-           callback() ;
-
-    });
-
-
-    this.on("update", function() {
-      callback() ;
-    }) ;
-
-
-});
+          this.root.innerHTML = opts.html.content ;
+     }) ;
 
 
 
 riot.tag("rg-accordion",
     '<div class="c-card c-card--accordion u-high">' +
     '   <virtual each="{item, index in opts.accordion.panels}">' +
-    '     <input type="checkbox" id="accordion-{index}" {checked: item.open} onclick="{notify}">' +
-    '     <label class="c-card__item" for="accordion-{index}">{item.title}</label>' +
-    '     <div class="c-accordion-content c-card__item"><rg-markdown content="{item.content}"></rg-markdown><yield></div>' +
+    '     <input type="checkbox" id="accordion-{index+RG2_BASE}" {checked: item.open} onclick="{notify}">' +
+    '     <label class="c-card__item" for="accordion-{index+RG2_BASE}">{item.title}</label>' +
+    '     <div id="accordion-content-{index+RG2_BASE}" class="c-accordion-content c-card__item">{item.content}</div>' +
     '   </virtual>' +
     '</div>',
     '.c-accordion-content {padding-left: 2em;}',
     function() {
-        var _this = this;
+        var self = this;
 
-        this.notify = function(e) {
-            not = {
-                index: e.item.index,
-                title: e.item.item.title,
+
+        self.notify = function(e) {
+            var selitem = e.item ;
+
+            notice = {
+                index: selitem.index,
+                title: selitem.item.title,
                 open: e.target.checked
             };
-            _this.trigger("notify", not);
+
+            if (notice.open) {
+               div = self.root.querySelector("#accordion-content-" + (selitem.index + RG2_BASE)) ;
+
+               if (div)
+                  div.innerHTML = toMarkdown (selitem.item.content) ;
+
+               self.update() ;
+               }
+
+            self.trigger("notify", notice);
         };
 
     });
@@ -191,57 +227,88 @@ riot.tag("rg-address",
 // Single Alert
 //TODO fix use of unmount
 riot.tag("rg-alert",
-    '<div class="c-alert if={opts.type} {\'c-alert--\' + opts.type}"><button ref="closeButton" class="c-button c-button--close"' +
-    ' hide={opts.dismissable==false} onclick="{dismiss}">&times;</button><rg-markdown content="{opts.text}"></rg-markdown></div>', "", "",
+    '<div class="c-alert {\'c-alert--\' + opts.alert.type}">'+
+    '    <button ref="closeButton" class="c-button c-button--close" onclick="{dismiss}" if={opts.alert.dismissable===true}>&times;</button>'+
+    '    <rg-html content="{opts.alert.text}"></rg-html>'+
+    '</div>', "", "",
     function(opts) {
-        var _this = this;
+        var self = this;
 
-        this.on("mount", function() {
-            if (this.opts.dismissable)
-                this.refs.closeButton.hidden = false;
-            else
-                this.refs.closeButton.hidden = true;
+        self.dismiss = function(e) {
+            if (self.opts.alert.timeout)
+                clearTimeout(self.startTimer);
 
-            this.update();
+            self.unmount();
+        } // dismiss
+
+
+        if (!opts.alert) opts.alert = {} ;
+
+        if (!opts.text && self.root._innerHTML) opts.text = self.root._innerHTML ;
+        if (opts.text) opts.alert.text = opts.text ;
+
+        if (opts.alert.text) {
+           rndr = toMarkdown(opts.alert.text) ;
+           console.log("alert text: " + rndr) ;
+           self.root._innerHTML = rndr ;
+           opts.alert.text = rndr ;
+           }
+
+
+        self.on("before-mount", function() {
+          if (!opts.alert) opts.alert = {dismissable: true} ;
+
+          if (opts.type) opts.alert.type = opts.type ;
+
+          if (opts.dismissable) opts.alert.dismissable = toBoolean(opts.dismissable) ;
+
+          if (opts.timeout) opts.alert.timeout = Number(opts.timeout) ;
+
+          // timeout sanity check
+          if (opts.alert.timeout <= 0) {                                 // remove negative values
+             console.log("Alert timeout negative value of [" + opts.alert.timeout + "] adjusted to " + abs(opts.alert.timeout)) ;
+             opts.alert.timeout = abs(opts.alert.timeout);
+             }
+
+          if (opts.alert.timeout >= 1 && opts.alert.timeout <= 100)    // Convert seconds to miliseconds
+                opts.alert.timeout = opts.alert.timeout * 1000;
+
+          if (opts.alert.timeout >= 500000) {      // crazy large values are reduced to reasonable values
+             console.log("Alert timeout value reduced from [" + opts.alert.timeout + "] to 5secs.") ;
+             opts.alert.timeout = 5000 ;
+             }
+
+
+
+          if (typeof opts.alert.timeout == "number" && opts.alert.timeout > 0) {
+            self.startTimer = function() {
+              self.timer = setTimeout(function() {
+                self.dismiss();
+              }, opts.alert.timeout)
+            };
+            self.startTimer()
+          }
         });
 
 
-        if (typeof opts.dismissable == "string") {
-            opts.dismissable = Boolean(opts.dismissable);
-        }
+        self.on ("mount", function () {
+//          rndr = toMarkdown(opts.alert.text) ;
+//          console.log("alert text: " + rndr) ;
+//          self.__.innerHTML = rndr ;
+        }) ;
 
-        if (typeof this.opts.dismissable != "boolean") {
-            this.opts.dismissable = true;
-        }
-
-        if (typeof opts.timeout == "string")
-            opts.timeout = Number(opts.timeout);
-
-        if (typeof opts.timeout == "number" && opts.timeout > 0) {
-            this.startTimer = function() {
-                this.timer = setTimeout(function() {
-                    _this.dismiss();
-                }, opts.timeout)
-            };
-            this.startTimer()
-        }
-
-
-        this.dismiss = function(e) {
-            if (this.opts.timeout)
-                clearTimeout(this.startTimer);
-
-            this.unmount();
-        } // onSelect
     });
 
 
 
 // Multiple Alets
 riot.tag("rg-alerts",
-    '<div each="{opts.alerts}"><rg-alert text="{text}" type="{type}" dismissable={dismissable} timeout={timeout}>' +
-    '</rg-alert> </div>', "", "",
-    function() {});
+    '<virtual each="{opts.alerts}">'+
+    '    <rg-alert text="{text}" type="{type}" dismissable={dismissable} timeout={timeout}></rg-alert>'+
+    '</virtual>', "", "",
+    function() {
+       var self = this ;
+    });
 
 
 
@@ -366,7 +433,7 @@ riot.tag("rg-chart",
         }
 
         if (typeof Chart === "undefined")
-            loadJS(rg_chart_cdn_chartjs, callback);
+            loadJS(RG_CHART_CDN_CHARTJS, callback);
         else
             dependencyOK = true;
 
@@ -405,7 +472,8 @@ riot.tag("rg-chart",
         }
     });
 
-// Based on code at: http://codepen.io/iprodev/full/azpWBr/ by Ham Chawroka
+// Based on code at: http://codepen.io/iprodev/full/azpWBr/ by Hamn Chawroka
+// Chrome issue is to do with caching of canvas details... Firefox OK Win/Linux, Chrome OK once after cache cleared.
 riot.tag("rg-confetti", "", "", "",
    function(opts){
      var confcanv ;
@@ -830,7 +898,7 @@ riot.tag("rg-date",
 
             } catch (ex) {
                 callbackUsed = true;
-                loadJS(rg_date_cdn_momentjs, callback);
+                loadJS(RG_DATE_CDN_MOMENTJS, callback);
             }
 
             if (callback) {
@@ -1178,6 +1246,43 @@ riot.tag("rg-map", '<div ref="{opts.id}" class="rg-map" style="width: 100%; min-
 });
 
 
+
+
+riot.tag("rg-markdown", "", "", "", function(opts) {
+    var self = this ;
+
+    var rgMkDnCallback = function (rendered) {
+      self.root.innerHTML = rendered ;
+      }
+
+    var render = function (content) {
+       toMarkdown (content, rgMkDnCallback) ;
+    } ;
+
+    this.on("before-mount", function() {
+
+        if (!opts.markdown) {
+            opts.markdown = {
+                content: (opts.content ? opts.content : (self.root._innerHTML ? self.root._innerHTML : undefined))
+            }
+        }
+
+        if (opts.content) {
+            opts.markdown.content = opts.content;
+        }
+
+        if (this.root._innerHTML)
+            opts.markdown.content = this.root._innerHTML;
+
+        render (self.opts.markdown.content, rgMkDnCallback) ;
+    });
+
+
+    this.on("update", function() {
+       render (self.opts.markdown.content, rgMkDnCallback) ;
+    }) ;
+
+});
 
 
 
