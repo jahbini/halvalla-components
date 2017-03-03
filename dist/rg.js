@@ -14,6 +14,13 @@ var RG_CREDIT_CARD_PAYMENT_FONTS = "https://cdnjs.cloudflare.com/ajax/libs/payme
   var RG_MARKDOWN_CDN_MARKDOWN = "https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.3.0/markdown-it.min.js";
 
 
+  // ----------------------------------------
+
+function RGVersion() {
+  return RG2_VERSION ;
+}
+
+  // ----------------------------------------
 function loadCSS(file, callback, error) {
     var _file = file ;
     var loaded = document.querySelector('link[href="'+file+'"]') ;
@@ -41,9 +48,10 @@ function loadCSS(file, callback, error) {
        }
 
     document.head.appendChild(css);
-}
+}   //eof: loadCSS
 
 
+// ----------------------------------------
 function loadJS(file, callback, error, type) {
     var _file = file ;
     var loaded = document.querySelector('script[src="'+file+'"]') ;
@@ -75,9 +83,10 @@ function loadJS(file, callback, error, type) {
     script.onreadystatechange = callback;
 
     document.body.appendChild(script);
-}
+}   // eof: loadJS
 
 
+// ----------------------------------------
 function toBoolean(bool) {
     if (bool) {
         if (typeof bool === "string") {
@@ -91,9 +100,18 @@ function toBoolean(bool) {
     } else
         return undefined;
 
+}   // eof: toBoolean
+
+// ----------------------------------------
+function stripParas (text) {
+  if (text) {
+     text = text.replace(/<\/?p[^>]*>/g, '') ;
+   }
+return text ;
 }
 
 
+// ----------------------------------------
 function toMarkdown (content, renderCallback) {
   var markdownOK = !(typeof markdownit === "undefined");
   RG2_MKDN_RENDER = (markdownOK ? markdownit({html: true, linkify: true, typographer: true}) : undefined ) ;
@@ -113,6 +131,8 @@ function toMarkdown (content, renderCallback) {
           if (markdownOK) {
              rendered = RG2_MKDN_RENDER.render(_content) ;
 
+             rendered = stripParas(rendered) ;
+
              if (renderCallback)
                 renderCallback(rendered) ;
 
@@ -120,7 +140,7 @@ function toMarkdown (content, renderCallback) {
              }
 
       }
-  }
+  }   // eof: toMarkdown::callbackMkdn
 
   if ( ! markdownOK)
      loadJS(RG_MARKDOWN_CDN_MARKDOWN, callbackMkdn);
@@ -131,12 +151,11 @@ function toMarkdown (content, renderCallback) {
      if (renderCallback)
         renderCallback(rendered) ;
 
-     return rendered ;
+     return stripParas(rendered) ;
      }
+}    // eof: toMarkdown
 
-}
-
-
+// ----------------------------------------
 function RiotGearInit() {
     if (RG2_INIT === true)
        return ;
@@ -147,7 +166,9 @@ function RiotGearInit() {
     }
 
  toMarkdown("**RG2** [" + RG2_VERSION + "] started", localCB) ;
-}
+}   // eof: RiotGearInit
+
+
 
 document.addEventListener("DOMContentLoaded", function(event) {
   RiotGearInit() ;
@@ -163,6 +184,8 @@ riot.tag("rg-html", '<span></span>', "", "",
           if (!opts.html) opts.html = {} ;
 
           if (!opts.html.content) opts.html.content = this.root._innerHTML ;
+
+          if (!opts.content && this.root._innerHTML) opts.html.content = this.root._innerHTML ;
 
           if (opts.content) opts.html.content = opts.content ;
 
@@ -249,9 +272,11 @@ riot.tag("rg-alert",
 
         if (opts.alert.text) {
            rndr = toMarkdown(opts.alert.text) ;
-           console.log("alert text: " + rndr) ;
-           self.root._innerHTML = rndr ;
-           opts.alert.text = rndr ;
+
+           if (rndr) {
+              self.root._innerHTML = rndr ;
+              opts.alert.text = rndr ;
+              }
            }
 
 
