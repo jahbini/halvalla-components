@@ -2316,7 +2316,7 @@ riot.tag("rg-toggle",
     '          <div class="c-toggle__handle"></div>' +
     '        </div>' +
     '   </label>' +
-    '   {opts.toggle.text}' +
+    '   <rg-html content="{opts.toggle.text}"><rg-html>' +
     '</div>',
     ".c-toggle{padding-top: 0.5vh;}", "",
     function(opts) {
@@ -2328,7 +2328,7 @@ riot.tag("rg-toggle",
             }
         }
 
-        if (!opts.toggle.text) opts.toggle.text = toMarkdown(opts.toggle.text) ;
+        if (opts.toggle.text) opts.toggle.text = toMarkdown(opts.toggle.text) ;
 
         if (opts.text) opts.toggle.text = toMarkdown(opts.text);
 
