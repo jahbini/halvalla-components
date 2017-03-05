@@ -1,11 +1,14 @@
 // START: --- RG_UTILS code ------
-var RG2_VERSION = "3.6.1" ;
+var RG2_VERSION = "3.6.2" ;
 var RG2_INIT = false ;
 var RG2_BASE = Date.now() ;
+var RG2_CONFETTI = "rg-confetti" ;  //TODO Leave as is... rg-confetti.js needs this name, besides there can only be one! :-P
+var RG2_CONFETTI_MSG ;    //TODO Used to pass text to rg-confetti.js, yes, yes, very hacky. Will fix later.
 
 var RG2_MKDN_RENDER ;
 
 var RG_DATE_CDN_MOMENTJS = "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js";
+var RG_CODE_CDN_ACEJS = "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.js";
 
 //var RG_CHART_CDN_CHARTJS = "https://cdn.jsdelivr.net/chart.js/1.0.2/Chart.min.js" ;
 var RG_CHART_CDN_CHARTJS = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js";
@@ -87,18 +90,53 @@ function loadJS(file, callback, error, type) {
 
 
 // ----------------------------------------
-function toBoolean(bool) {
+function isBoolean(bool) {
     if (bool) {
+
+      if (typeof bool === "number") {
+         bool = Number(bool);
+
+            if (bool === 1)
+                return true;
+            else
+                return false;
+        }
+
         if (typeof bool === "string") {
-            if (bool.toLowerCase() === "true" || bool.toLowerCase() === "false")
-                if (bool.toLowerCase() === "true")
+           bool = bool.toLowerCase() ;
+
+          if (bool === "true" || bool === "false")
+              if (bool === "true")
+                  return true;
+              else
+                  return false;
+
+          if (bool === "yes" || bool === "no")
+              if (bool === "yes")
+                  return true;
+              else
+                  return false;
+
+            if (bool === "on" || bool === "off")
+                if (bool === "on")
                     return true;
                 else
                     return false;
-        } else if (typeof bool == "boolean")
-            return bool;
+
+        } else if (typeof bool === "boolean")
+            return true;
     } else
-        return undefined;
+        return false;
+
+}   // eof: isBoolean
+
+// ----------------------------------------
+function toBoolean(bool) {
+
+   if (bool)
+      return isBoolean(bool) ;
+   else
+      return undefined;
 
 }   // eof: toBoolean
 
@@ -250,7 +288,7 @@ riot.tag("rg-address",
 // Single Alert
 //TODO fix use of unmount
 riot.tag("rg-alert",
-    '<div class="c-alert {\'c-alert--\' + opts.alert.type}">'+
+    '<div class="c-alert {\'c-alert--\' + opts.alert.style}">'+
     '    <button ref="closeButton" class="c-button c-button--close" onclick="{dismiss}" if={opts.alert.dismissable===true}>&times;</button>'+
     '    <rg-html content="{opts.alert.text}"></rg-html>'+
     '</div>', "", "",
@@ -283,7 +321,7 @@ riot.tag("rg-alert",
         self.on("before-mount", function() {
           if (!opts.alert) opts.alert = {dismissable: true} ;
 
-          if (opts.type) opts.alert.type = opts.type ;
+          if (opts.style) opts.alert.style = opts.style ;
 
           if (opts.dismissable) opts.alert.dismissable = toBoolean(opts.dismissable) ;
 
@@ -329,7 +367,7 @@ riot.tag("rg-alert",
 // Multiple Alets
 riot.tag("rg-alerts",
     '<virtual each="{opts.alerts}">'+
-    '    <rg-alert text="{text}" type="{type}" dismissable={dismissable} timeout={timeout}></rg-alert>'+
+    '    <rg-alert text="{text}" style="{style}" dismissable={dismissable} timeout={timeout}></rg-alert>'+
     '</virtual>', "", "",
     function() {
        var self = this ;
@@ -381,30 +419,33 @@ riot.tag("rg-avatar",
 
 
 
-// Avatar images and text
+// Different styles of badgy things
 riot.tag("rg-badge",
-    '<span class="c-badge {\'c-badge--\' + opts.badge.type} {\'c-badge--rounded\':opts.badge.rounded} {\'c-badge--ghost\':opts.badge.ghost}" onclick={clicked}><yield /></span>',
+    '<span class="c-badge {\'c-badge--\' + opts.badge.style} {\'c-badge--rounded\':opts.badge.rounded} '+
+    '{\'c-badge--ghost\':opts.badge.ghost}" onclick={clicked}>{opts.badge.text}<yield /></span>',
     "", "",
     function() {
         var self = this;
 
         updateOpts = function() {
-            if (self.opts.type) self.opts.badge.type = self.opts.type;
+            if (self.opts.text) self.opts.badge.text = self.opts.text ;
 
-            if (self.opts.rounded) self.opts.badge.rounded = self.opts.rounded;
+            if (self.opts.style) self.opts.badge.style = self.opts.style ;
 
-            if (self.opts.ghost) self.opts.badge.ghost = self.opts.ghost;
+            if (self.opts.rounded) self.opts.badge.rounded = self.opts.rounded ;
+
+            if (self.opts.ghost) self.opts.badge.ghost = self.opts.ghost ;
         }
 
         clicked = function(e) {
             badge = {
-                type: self.opts.badge.type,
+                text: self.opts.badge.text,
+                style: self.opts.badge.style,
                 rounded: self.opts.badge.rounded,
                 ghost: self.opts.badge.ghost
             };
 
-            console.log("badge clicked", self.opts);
-            self.trigger("clicked", badge);
+            self.trigger("badge-clicked", badge);
         }
 
         self.on("before-mount", function() {
@@ -442,6 +483,69 @@ riot.tag("rg-bubble",
         }
     });
 
+
+
+
+riot.tag("rg-button",
+     '',
+     "", "",
+     function (opts){
+
+     });
+
+
+
+
+
+    // Navigation Breadcrumbs
+riot.tag("rg-breadcrumbs",
+        '<ol class="c-breadcrumbs" >'+
+        '   <virtual each="{link, index in opts.breadcrumbs.links}">'+
+        '         <li class="c-breadcrumbs__crumb" hide="{link.istext}">'+
+                    '<a class="c-link" href="{link.url}" onclick="{linkclicked}">{link.text}</a> '+
+        '             <rg-badge style="{link.badge.style}" ghost="{link.badge.ghost}" rounded="{link.badge.rounded}"'+
+        '                 text="{link.badge.text}" if="{link.badge.text}"></rg-badge></li>'+
+        '         <li class="c-breadcrumbs__crumb c-text--loud" show="{link.istext}">{link.text}</li>'+
+        '   </virtual>'+
+        '<yield /></ol>',
+        "", "",
+        function() {
+            var self = this;
+
+            updateOpts = function() {
+                if (self.opts.style) self.opts.badge.style = self.opts.style;
+
+                if (self.opts.rounded) self.opts.badge.rounded = self.opts.rounded;
+
+                if (self.opts.ghost) self.opts.badge.ghost = self.opts.ghost;
+            }
+
+            linkclicked = function(e) {
+                sellink = e.item.link ;
+
+                link = {
+                    text: sellink.text,
+                    badge: sellink.badge.text,
+                    url: sellink.url
+                };
+
+                self.trigger("link-clicked", link);
+            }
+
+            self.on("before-mount", function() {
+
+                if (!self.opts.breadcrumbs) self.opts.breadcrumbs = {links: []};
+
+                for (index in  self.opts.breadcrumbs.links)
+                    if (!self.opts.breadcrumbs.links[index].badge) self.opts.breadcrumbs.links[index].badge = {} ;
+
+                updateOpts();
+            });
+
+        self.on ("badge-clicked", function (bc) {
+               self.trigger("badge-clicked", bc)
+             }) ;   // forward the message...
+        });
 
 
 riot.tag("rg-chart",
@@ -497,102 +601,137 @@ riot.tag("rg-chart",
         }
     });
 
+    //TODO Need to load ACE dependecy dynamically.
+    riot.tag2("rg-code",
+        '<div class="editor"></div>',
+        'rg-code .editor,[riot-tag="rg-code"] .editor,[data-is="rg-code"] ' +
+        '.editor{ position: absolute; top: 0; right: 0; bottom: 0; left: 0; }', "",
+        function(opts) {
+
+            var _this = this;
+
+            if (!opts.editor) opts.editor = {
+                code: ""
+            };
+
+            var editor = undefined;
+
+            var setupEditor = function setupEditor() {
+                editor.setTheme("ace/theme/" + (opts.editor.theme || "monokai"));
+                editor.getSession().setMode("ace/mode/" + (opts.editor.mode || "html"));
+                editor.getSession().setTabSize(opts.editor.tabsize || 2);
+                editor.getSession().setUseSoftTabs(opts.editor.softtabs);
+                editor.getSession().setUseWrapMode(opts.editor.wordwrap);
+                editor.setReadOnly(opts.editor.readonly)
+            };
+
+
+            this.on("mount", function() {
+                editor = ace.edit(_this.root.querySelector(".editor"));
+                editor.$blockScrolling = Infinity;
+                _this.on("update", function(stuff) {
+                    setupEditor();
+                    if (opts.editor.code != editor.getValue()) editor.setValue(opts.editor.code, 1)
+                });
+
+
+                if (opts.url) {
+                    var req = new XMLHttpRequest;
+                    req.onload = function(resp) {
+                        opts.editor.code = resp;
+                        _this.update()
+                    };
+                    req.open("get", opts.url, true);
+                    req.send()
+                }
+
+                editor.setValue(opts.editor.code, 1);
+                editor.getSession().on("change", function(e) {
+                    opts.editor.code = editor.getValue();
+                    _this.trigger("onchange", editor.getValue())
+                });
+
+                setupEditor();
+                _this.update()
+            })
+        });
+
+
 // Based on code at: http://codepen.io/iprodev/full/azpWBr/ by Hamn Chawroka
 // Chrome issue is to do with caching of canvas details... Firefox OK Win/Linux, Chrome OK once after cache cleared.
 riot.tag("rg-confetti", "", "", "",
    function(opts){
-     var confcanv ;
+     var canvas ;
      var self = this ;
+     var stateOn = (opts.state ? toBoolean(opts.state) : true) ;
+
+     if (!opts.confetti) opts.confetti = {state: stateOn} ;
+
+     if (!opts.confetti.url && opts.url) opts.confetti.url = opts.url ;
+
+     if (!opts.confetti.message && opts.message) opts.confetti.message = opts.message ;
+
+
+     function removeCanvas() {
+       cnv = document.getElementById(RG2_CONFETTI) ;
+
+       if (cnv)
+          document.body.removeChild(cnv) ;
+     }
+
+
+     function addCanvas() {
+       canvas = document.createElement('canvas') ;
+       canvas.id = RG2_CONFETTI;
+       canvas.width = 1 ;
+       canvas.height = 1 ;
+
+       canvas.style.left = 0 ;
+       canvas.style.top = 0 ;
+
+       canvas.style.width = '100%' ;
+       canvas.style.height = '100%' ;
+
+       canvas.style.position = 'absolute' ;
+
+
+       if (opts.confetti.message)
+          RG2_CONFETTI_MSG = opts.confetti.message ;
+
+
+       canvas.onclick = function() {
+               stateOn = !stateOn ;
+               opts.confetti.state = stateOn ;
+
+               if (stateOn)
+                  addCanvas() ;
+               else
+                  removeCanvas() ;
+
+              // No political comments here... move along
+              confettistate =
+                   {id: RG2_CONFETTI, state: stateOn, message: opts.confetti.message}
+
+               self.trigger("confetti-clicked", confettistate) ;
+               } ;
+
+       document.body.appendChild(canvas);
+       loadJS(opts.confetti.url, callback);
+     }
 
       var callback = function callback(){
 
       } ;
 
       if (typeof confetti === "undefined"){
-         confcanv = this.root.querySelector('#rg-confetti') ;
+         canvas = this.root.querySelector('#' + RG2_CONFETTI) ;
 
-       if (!confcanv) {
-          confcanv = document.createElement('canvas') ;
-          confcanv.id = 'rg-confetti';
-          confcanv.width = 1 ;
-          confcanv.height = 1 ;
+       if (!canvas && stateOn)
+          addCanvas() ;
 
-          confcanv.style.left = 0 ;
-          confcanv.style.top = 0 ;
-
-          confcanv.style.width = '100%' ;
-          confcanv.style.height = '100%' ;
-
-          confcanv.style.position = 'absolute' ;
-          confcanv.style.display = 'auto' ;
-
-          confcanv.onclick = function() {
-                  confcanv.style.display = 'none' ;
-                  self.trigger("clciked", confcanv) ;
-                  } ;
-
-          document.body.appendChild(confcanv);
-          loadJS(opts.confetti.url, callback);
-          }
 
          }
 });
-
-
-riot.tag2("rg-code",
-    '<div class="editor"></div>',
-    'rg-code .editor,[riot-tag="rg-code"] .editor,[data-is="rg-code"] ' +
-    '.editor{ position: absolute; top: 0; right: 0; bottom: 0; left: 0; }', "",
-    function(opts) {
-
-        var _this = this;
-
-        if (!opts.editor) opts.editor = {
-            code: ""
-        };
-
-        var editor = undefined;
-
-        var setupEditor = function setupEditor() {
-            editor.setTheme("ace/theme/" + (opts.editor.theme || "monokai"));
-            editor.getSession().setMode("ace/mode/" + (opts.editor.mode || "html"));
-            editor.getSession().setTabSize(opts.editor.tabsize || 2);
-            editor.getSession().setUseSoftTabs(opts.editor.softtabs);
-            editor.getSession().setUseWrapMode(opts.editor.wordwrap);
-            editor.setReadOnly(opts.editor.readonly)
-        };
-
-
-        this.on("mount", function() {
-            editor = ace.edit(_this.root.querySelector(".editor"));
-            editor.$blockScrolling = Infinity;
-            _this.on("update", function(stuff) {
-                setupEditor();
-                if (opts.editor.code != editor.getValue()) editor.setValue(opts.editor.code, 1)
-            });
-
-
-            if (opts.url) {
-                var req = new XMLHttpRequest;
-                req.onload = function(resp) {
-                    opts.editor.code = resp;
-                    _this.update()
-                };
-                req.open("get", opts.url, true);
-                req.send()
-            }
-
-            editor.setValue(opts.editor.code, 1);
-            editor.getSession().on("change", function(e) {
-                opts.editor.code = editor.getValue();
-                _this.trigger("onchange", editor.getValue())
-            });
-
-            setupEditor();
-            _this.update()
-        })
-    });
-
 
 riot.tag("rg-credit-card-number",
     '<input type="text" ref="cardinput" class="c-field card-no {icon} {\'c-field--success\': opts.valid}" ' +
@@ -1337,7 +1476,7 @@ riot.tag("rg-modal",
     '</div>' +
     '<footer class="c-card__footer" {\'c-card__footer--block\': !opts.modal.ghost}">' +
     '<div class="c-input-group">' +
-    '<button each="{opts.modal.buttons}" type="button" class="c-button {c-button--block: blockbuttons} {\'c-button--\' + type}" onclick="{action}" riot-style="{style}"> {text} </button>' +
+    '<button each="{opts.modal.buttons}" type="button" class="c-button {c-button--block: blockbuttons} {\'c-button--\' + style}" onclick="{action}" riot-style="{style}"> {text} </button>' +
     '</div>' +
     '</footer>' +
     '</div>' +
@@ -1365,7 +1504,7 @@ riot.tag("rg-modal",
                     heading: (opts.heading ? opts.heading : 'Note'),
                     buttons: [{
                         text: 'Close',
-                        type: 'brand',
+                        style: 'brand',
                         action: function() {
                             this.close()
                         }
@@ -1778,7 +1917,7 @@ riot.tag("rg-select", '<input type="{opts.select.filter ? \'search\' : \'text\'}
 
 
 riot.tag("rg-tabs",
-    '<div class="c-tabs {\'c-tabs--\' + opts.tabs.type}">' +
+    '<div class="c-tabs {\'c-tabs--\' + opts.tabs.style}">' +
     '   <div class="c-tabs__headings"> ' +
     '     <div each="{opts.tabs.tabs}" class="c-tab-heading {\'c-tab-heading--active\': active, \'c-tab-heading--disabled\': disabled}"' +
     ' onclick="{parent.open}"> {heading}' +
@@ -1819,12 +1958,12 @@ riot.tag("rg-tabs",
         this.on("before-mount", function() {
             if (!opts.tabs)
                 opts.tabs = {
-                    type: 'default',
+                    style: 'default',
                     tabs: []
                 };
 
-            if (opts.type)
-                opts.tabs.type = opts.type;
+            if (opts.style)
+                opts.tabs.style = opts.style;
 
         });
 
@@ -1846,27 +1985,27 @@ Note! Depends on rg-utils.js
 
 HTML:
 <rg-tags></rg-tags>
-<rg-tags type="error"></rg-tags>
-<rg-tags type="error" filter=true></rg-tags>
-<rg-tags type="error" placeholder="Nyah! Nyah! Na Na Na!"></rg-tags>
+<rg-tags style="error"></rg-tags>
+<rg-tags style="error" filter=true></rg-tags>
+<rg-tags style="error" placeholder="Nyah! Nyah! Na Na Na!"></rg-tags>
 
 Script:
     var tags = riot.mount('rg-tags', {
       tags: {
-        type: "brand",
+        style: "brand",
         placeholder: 'Choose a country',
         filter: 'text', // <-- this enables filtering on the 'text' property
         options: [{
           text: 'England',
-          type: 'info'
+          style: 'info'
         }, {
           text: 'Scotland',
         }, {
           text: 'Ireland',
-          type: 'warning'
+          style: 'warning'
         }, {
           text: 'Wales',
-          type: 'success'
+          style: 'success'
         }],
         tags: [{
           text: 'United States',
@@ -1881,7 +2020,7 @@ Script:
 riot.tag("rg-tags",
     '<div class="c-tags">' +
     '  <span class="c-tags__container">' +
-    '    <button each="{opts.tags.tags}" onclick="{removeTag}" type="c-button" class="c-button c-button--{type} c-tag"> {text} ' +
+    '    <button each="{opts.tags.tags}" onclick="{removeTag}" type="c-button" class="c-button c-button--{style} c-tag"> {text} ' +
     '      <span class="c-tag__close">×</span>' +
     '   </button>' +
     '  </span>' +
@@ -1905,15 +2044,15 @@ riot.tag("rg-tags",
             tags: []
         }
         else {
-            if (!opts.tags.type)
-                opts.tags.type = "default";
+            if (!opts.tags.style)
+                opts.tags.style = "default";
         } // else..if
 
         if (!opts.tags.options) opts.tags.options = [];
         if (!opts.tags.tags) opts.tags.tags = [];
 
-        if (opts.type)
-            opts.tags.type = opts.type;
+        if (opts.style)
+            opts.tags.style = opts.style;
 
         if (opts.placeholder)
             opts.tags.placeholder = opts.placeholder;
@@ -1927,16 +2066,16 @@ riot.tag("rg-tags",
                 opts.tags.filter = undefined;
         }
 
-        var defType = opts.tags.type;
+        var defstyle = opts.tags.style;
 
         for (i = 0; i < opts.tags.options.length; i++) {
-            if (!opts.tags.options[i].type)
-                opts.tags.options[i].type = defType;
+            if (!opts.tags.options[i].style)
+                opts.tags.options[i].style = defstyle;
         } // for
 
         for (i = 0; i < opts.tags.tags.length; i++) {
-            if (!opts.tags.tags[i].type)
-                opts.tags.tags[i].type = defType;
+            if (!opts.tags.tags[i].style)
+                opts.tags.tags[i].style = defstyle;
         } // for
 
 
@@ -2105,7 +2244,7 @@ riot.tag("rg-tags",
 
 riot.tag("rg-toasts",
     '<div if="{opts.toasts.isvisible}" class="c-alerts {\'c-alerts--\' + opts.toasts.position}">' +
-    '   <div each="{opts.toasts.toasts}" class="c-alert {\'c-alert--\' + type}" if="{isvisible}" onclick="{parent.toastClicked}"> {text} </div>' +
+    '   <div each="{opts.toasts.toasts}" class="c-alert {\'c-alert--\' + style}" if="{isvisible}" onclick="{parent.toastClicked}"> {text} </div>' +
     ' </div>', "", "",
     function(opts) {
         var _this = this;
@@ -2155,14 +2294,14 @@ Note! Depends on rg-utils.js
 HTML:
 <rg-toggle></rg-toggle>
 <rg-toggle text="Average White Band"></rg-toggle>
-<rg-toggle  type="info" checked=true></rg-toggle>
-<rg-toggle text="Average White Band" type="success" checked=false></rg-toggle>
+<rg-toggle  style="info" checked=true></rg-toggle>
+<rg-toggle text="Average White Band" style="success" checked=false></rg-toggle>
 
 Script:
     var tags = riot.mount('rg-toggle', {
       toggle: {
         text: 'My Thang',
-        type: 'success',
+        style: 'success',
         checked: false
       }
     })
@@ -2170,7 +2309,7 @@ Script:
     tags[0].on('toggle', function (checked) { console.log("state", checked) })
 */
 riot.tag("rg-toggle",
-    '<div class="c-toggle {\'c-toggle--\' + opts.toggle.type}">' +
+    '<div class="c-toggle {\'c-toggle--\' + opts.toggle.style}">' +
     '   <label class="c-toggle__wrapper">' +
     '        <input type="checkbox" checked="{opts.toggle.checked}" onclick="{toggle}">' +
     '        <div class="c-toggle__track">' +
@@ -2178,25 +2317,24 @@ riot.tag("rg-toggle",
     '        </div>' +
     '   </label>' +
     '   {opts.toggle.text}' +
-    '</div>', ".c-toggle{padding-top: 0.5vh;}", "",
+    '</div>',
+    ".c-toggle{padding-top: 0.5vh;}", "",
     function(opts) {
         var _this = this;
 
         if (!opts.toggle) {
             opts.toggle = {
-                type: "default"
+                style: "default"
             }
         }
 
-        if (opts.text)
-            opts.toggle.text = opts.text;
+        if (!opts.toggle.text) opts.toggle.text = toMarkdown(opts.toggle.text) ;
 
-        if (opts.type)
-            opts.toggle.type = opts.type;
+        if (opts.text) opts.toggle.text = toMarkdown(opts.text);
 
-        if (opts.checked)
-            opts.toggle.checked = toBoolean(opts.checked);
+        if (opts.style) opts.toggle.style = opts.style;
 
+        if (opts.checked) opts.toggle.checked = toBoolean(opts.checked);
 
 
         this.on("mount", function() {
