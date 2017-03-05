@@ -184,7 +184,6 @@ function toMarkdown (content, renderCallback) {
      loadJS(RG_MARKDOWN_CDN_MARKDOWN, callbackMkdn);
   else {
      rendered = RG2_MKDN_RENDER.render(_content) ;
-     console.log("markdown output:" + rendered) ;
 
      if (renderCallback)
         renderCallback(rendered) ;
@@ -487,9 +486,45 @@ riot.tag("rg-bubble",
 
 
 riot.tag("rg-button",
-     '',
+     '<button class="c-button {\'c-button--\' + opts.button.style} {\'c-button--rounded\':opts.button.rounded} '+
+     '{\'c-button--active\':opts.button.active} {\'c-button--block\':opts.button.full} '+
+     '{\'c-button--ghost\': opts.button.ghost}{opts.button.style ? \'-\'+ opts.button.style : \'\'} '+
+     '{\'u-\' + opts.button.size}"'+
+     ' disabled="{opts.button.disabled}" onclick="{localClick}">'+
+     '     <rg-html content="{opts.button.text}"><rg-html>'+
+     '</button>',
      "", "",
      function (opts){
+       var self = this ;
+
+
+       localClick = function (e){
+         btn = {text: self.opts.button.text, style: opts.button.style, size: opts.button.size, disabled: opts.button.disabled, event: e} ;
+         self.trigger("button-clicked", btn);
+       }
+
+
+       if (!opts.button) opts.button = {
+                           style: undefined,
+                           size: "small",
+                           rounded: false,
+                           ghost: false,
+                           full: false,
+                           active: false,
+                           disabled: false
+                           } ;
+
+       if (!opts.text && self.root._innerHTML) opts.text = self.root._innerHTML ;
+       if (opts.text) opts.button.text = toMarkdown(opts.text) ;
+
+       if (opts.style) opts.button.style = opts.style;
+       if (opts.size) opts.button.size = opts.size;
+       if (opts.active) opts.button.active = toBoolean(opts.active);
+       if (opts.disabled) opts.button.disabled = toBoolean(opts.disabled);
+
+       if (opts.ghost) opts.button.ghost = toBoolean(opts.ghost);
+       if (opts.rounded) opts.button.rounded = toBoolean(opts.rounded);
+       if (opts.full) opts.button.full = toBoolean(opts.full);
 
      });
 
