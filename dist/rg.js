@@ -504,32 +504,64 @@ riot.tag("rg-button",
        }
 
 
-       if (!opts.button) opts.button = {
-                           style: undefined,
-                           size: "small",
-                           rounded: false,
-                           ghost: false,
-                           full: false,
-                           active: false,
-                           disabled: false
-                           } ;
+       if (!opts.button)
+          opts.button = {} ;
 
-       if (!opts.text && self.root._innerHTML) opts.text = self.root._innerHTML ;
+       opts.button.style    = (opts.style ? opts.style : undefined),
+       opts.button.size     = (opts.size ? opts.size : "small"),
+       opts.button.rounded  = (opts.rounded ? toBoolean(opts.rounded) : false),
+       opts.button.ghost    = (opts.ghost ? toBoolean(opts.ghost) : false),
+       opts.button.full     = (opts.full ? toBoolean(opts.full) : false),
+       opts.button.active   = (opts.active ? toBoolean(opts.active) : false),
+       opts.button.disabled = (opts.disabled ? toBoolean(opts.disabled) : false)
+
+
+       if (!opts.text && self.root._innerHTML) opts.text = toMarkdown(self.root._innerHTML) ;
+       if (!opts.button.text && self.root._innerHTML) opts.button.text = toMarkdown(self.root._innerHTML) ;
+       if (opts.button.text) opts.button.text = toMarkdown(opts.button.text) ;
+
        if (opts.text) opts.button.text = toMarkdown(opts.text) ;
-
-       if (opts.style) opts.button.style = opts.style;
-       if (opts.size) opts.button.size = opts.size;
-       if (opts.active) opts.button.active = toBoolean(opts.active);
-       if (opts.disabled) opts.button.disabled = toBoolean(opts.disabled);
-
-       if (opts.ghost) opts.button.ghost = toBoolean(opts.ghost);
-       if (opts.rounded) opts.button.rounded = toBoolean(opts.rounded);
-       if (opts.full) opts.button.full = toBoolean(opts.full);
 
      });
 
 
+riot.tag("rg-button-group",
+    '<span class="c-input-group {\'c-input-group--rounded\': opts.group.rounded}">'+
+    '<virtual each="{button, index in opts.group.buttons}"> '+
+    '     <button class="c-button {\'c-button--\' + button.style} '+
+    '{\'c-button--ghost\': button.ghost}{button.style ? \'-\'+ button.style : \'\'} '+
+    '{\'c-button--active\':button.active} '+
+    '{\'u-\' + button.size}" disabled="{button.disabled}" onclick="{localClick}">'+
+    '<rg-html content="{button.text}"<</rg-html>'+
+    '</button>'+
+    '</virtual>'+
+    '</span>',
+    "", "",
+    function (opts){
+         var self = this ;
 
+         if (!opts.group) opts.group = {size: "medium", ghost: false, rounded: false, buttons: []} ;
+
+         if (opts.ghost) opts.group.ghost = toBoolean(opts.ghost) ;
+         if (opts.rounded) opts.group.rounded = toBoolean(opts.rounded) ;
+         if (opts.size) opts.group.size = opts.size ;
+         if (opts.style) opts.group.style = opts.style ;
+
+         for (btn in opts.group.buttons) {
+             opts.group.buttons[btn].ghost = (opts.group.ghost ? toBoolean(opts.group.ghost) : false) ;
+             opts.group.buttons[btn].size = (opts.group.size ? opts.group.size : undefined) ;
+             opts.group.buttons[btn].style = (opts.group.style && ! opts.group.buttons[btn].style ? opts.group.style : opts.group.buttons[btn].style) ;
+             opts.group.buttons[btn].text = toMarkdown(opts.group.buttons[btn].text) ;
+             opts.group.buttons[btn].disabled = (opts.group.buttons[btn].disabled ? toBoolean(opts.group.buttons[btn].disabled) : false) ;
+            }
+
+         localClick = function (e){
+           selbtn = e.item ;
+           btn = {index: selbtn.index, text: selbtn.button.text, style: selbtn.button.style, size: selbtn.button.size, disabled: selbtn.button.disabled, event: e} ;
+           self.trigger("button-clicked", btn);
+         }
+
+    }) ;
 
 
     // Navigation Breadcrumbs
