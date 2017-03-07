@@ -615,12 +615,61 @@ riot.tag("rg-breadcrumbs",
         });
 
 
+riot.tag("rg-card",
+     '<div class="c-card  {\'u-\' + opts.card.shadow}"> '+
+     '<img class="o-image" src="{opts.card.header.image}" if="{opts.card.header.image}">'+
+     ' <header class="c-card__header">' +
+     '<h2 class="c-heading c-heading--xsmall"><rg-html content="{opts.card.header.text}"></rg-html>' +
+     '<div class="c-heading__sub">{opts.card.header.subhead}</div>' +
+     '</h2>' +
+     '</header>' +
+     '<div class="c-card__item c-card__item{\'--\'+opts.card.header.style}" if="{opts.card.header.divider}"></div>'+
+     '  <div class"c-card__item">'+
+     '   <rg-html content="<p class=\'c-paragraph\'>{opts.card.text}</p>"></rg-html>'+
+     '<yield>'+
+     '  </div>'+
+     '<div class="c-card__item c-card__item{\'--\'+opts.card.footer.style}" if="{opts.card.footer.divider}"></div>'+
+     '<footer class="c-card__footer {\'c-card__footer--block\':opts.card.footer.block}">' +
+     '<p class="c-heading c-heading--xsmall"><rg-html content="{opts.card.footer.text}" if="{opts.card.footer.text}"></rg-html></p>' +
+     '<div class="c-input-group"> <button each="{button in opts.card.footer.items}" class="c-button c-button--block {\'c-button--\'+button.style}" '+
+           ' onclick="{btnclicked}">{button.text}</button>' +
+     ' </div>'+
+     '</footer>'+
+     '</div>',
+     "","",
+     function (opts){
+       var self = this ;
+
+       if (!opts.card) opts.card = {header: {}, footer: {items: []}};
+
+       if (opts.card.header.text) opts.card.header.text = toMarkdown(opts.card.header.text) ;
+       if (opts.card.footer.text) opts.card.footer.text = toMarkdown(opts.card.footer.text) ;
+       if (opts.card.text) opts.card.text = toMarkdown(opts.card.text) ;
+
+       if (opts.header) opts.card.header.text = toMarkdown(opts.header) ;
+       if (opts.footer) opts.card.footer.text = toMarkdown(opts.footer) ;
+       if (opts.text) opts.card.text = toMarkdown(opts.text) ;
+       if (opts.shadow) opts.card.shadow = opts.shadow ;
+
+       btnclicked = function(e) {
+           selbtn = e.item.button ;
+
+           btn = {
+               text: selbtn.text
+           };
+
+           self.trigger("button-clicked", btn);
+       }
+     });
+
+
 riot.tag("rg-chart",
     "<canvas></canvas>",
     'rg-chart,[riot-tag="rg-chart"],[data-is="rg-chart"]{ display: inline-block; width: 100%; }', "",
     function(opts) {
 
         var _this = this;
+
         var dependencyOK = false;
 
         var callback = function callback() {
@@ -667,6 +716,7 @@ riot.tag("rg-chart",
             _this.trigger("loaded", chart)
         }
     });
+
 
     //TODO Need to load ACE dependecy dynamically.
     riot.tag2("rg-code",
@@ -1306,7 +1356,8 @@ riot.tag("rg-drawer",
     '</div>' +
     '<div class="c-card__footer">' +
     '<div class="c-input-group"> <button class="c-button c-button--block" each="{opts.drawer.footer.items}" onclick="{parent.select}"> {text} </button>' +
-    ' </div></div></div>', "", "",
+    ' </div>'+
+    '</div></div>', "", "",
     function(opts) {
         var _this = this;
 
@@ -2418,7 +2469,7 @@ riot.tag("rg-toggle",
 
 
 riot.tag2("rg-unsplash",
-    '<img riot-src="https://unsplash.it/{opts.unsplash.greyscale}' +
+    '<img class="o-image" riot-src="https://unsplash.it/{opts.unsplash.greyscale}' +
     '{opts.unsplash.width}/{opts.unsplash.height}/?{options}">', "", "",
     function(opts) {
         var _this = this;
