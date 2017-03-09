@@ -131,6 +131,7 @@ function isBoolean(bool) {
 }   // eof: isBoolean
 
 // ----------------------------------------
+
 function toBoolean(bool) {
 
    if (bool)
@@ -139,6 +140,21 @@ function toBoolean(bool) {
       return undefined;
 
 }   // eof: toBoolean
+
+
+// ----------------------------------------
+
+function toNumber(num) {
+    if (num) {
+
+      if (typeof num === "number" || typeof num === "string")
+         return Number(num) ;
+
+    }
+ else
+   return NaN ;
+
+ } ;
 
 // ----------------------------------------
 function stripParas (text) {
@@ -648,10 +664,9 @@ riot.tag("rg-card",
          cnt = cnt.trim() ;
 
          if (cnt.startsWith("<rg-card") && cnt.endsWith("</rg-card>")) {
-           cnt = cnt.replace("</rg-card>", "") ;
-           bi = cnt.indexOf(">") ;
-           self.root._innerHTML = cnt.slice(bi+1, cnt.length) ;
-            console.log(self.root._innerHTML) ;
+            cnt = cnt.replace("</rg-card>", "") ;
+            bi = cnt.indexOf(">") ;
+            self.root._innerHTML = cnt.slice(bi+1, cnt.length) ;
             }
          }
 
@@ -1471,6 +1486,51 @@ riot.tag("rg-include", "<div> {responseText} </div>", "", "", function(opts) {
         fetch()
     })
 });
+
+
+
+riot.tag("rg-input",
+  '<input type="{opts.input.type}" class="c-field {\'c-field--\'+opts.input.style}" required="{opts.input.required}" disabled="{opts.input.disabled}"'+
+  'value="{opts.input.value}" placeholder="{opts.input.placeholder}" size="{opts.input.size}" min="{opts.input.min}" max="{opts.input.max}" step="{opts.input.step}">'+
+  '</input>',
+  "", "",
+  function(opts) {
+    var self = this ;
+
+    if (! opts.input) opts.input = {type: "text", style: undefined, disabled: false} ;
+
+    if (opts.value) opts.input.value = opts.value ;
+    if (opts.placeholder) opts.input.placeholder = opts.placeholder ;
+    if (opts.type) opts.input.type = opts.type ;
+    if (opts.style) opts.input.style = opts.style ;
+    if (opts.disabled) opts.input.disabled = toBoolean(opts.disabled) ;
+    if (opts.required) opts.input.required = toBoolean(opts.required) ;
+    if (opts.min) opts.input.min = toNumber(opts.min) ;
+    if (opts.max) opts.input.max = toNumber(opts.max) ;
+    if (opts.step) opts.input.step = toNumber(opts.step) ;
+    if (opts.size) opts.input.size = toNumber(opts.size) ;
+
+    if (opts.input.type && opts.input.type.toLowerCase() === "posnum") {
+        opts.input.type = "number" ;
+        opts.input.min = 0 ;
+        }
+
+    if (opts.input.type === "number" || opts.input.type === "range") {
+       if (opts.input.min && !opts.input.value) {
+          opts.input.value = opts.input.min ;
+          }
+
+       if (opts.input.min && opts.input.value) {
+          if (opts.input.value < opts.input.min)
+             opts.input.value = opts.input.min ;
+             }
+
+       if (opts.input.max && opts.input.value) {
+          if (opts.input.value > opts.input.max)
+             opts.input.value = opts.input.max ;
+          }
+     }
+  });
 
 
 riot.tag("rg-map", '<div ref="{opts.id}" class="rg-map" style="width: 100%; min-height: 10vh; height: 85vh;"></div>', 'rg-map .rg-map,[riot-tag="rg-map"] .rg-map,[data-is="rg-map"] .rg-map{ margin: 0; padding: 0; width: 100%; height: 100%; } rg-map .rg-map img,[riot-tag="rg-map"] .rg-map img,[data-is="rg-map"] .rg-map img{ max-width: inherit; }', "", function(opts) {
@@ -2499,7 +2559,7 @@ riot.tag2("rg-unsplash",
             opts.unsplash.width = opts.unsplash.width || 450;
             opts.unsplash.height = opts.unsplash.height || 250;
             if (opts.unsplash.greyscale) opts.unsplash.greyscale = "g/";
-            if (opts.unsplash.random) _this.optons += "random&";
+            if (opts.unsplash.random) _this.options += "random&";
             if (opts.unsplash.blur) _this.options += "blur&";
             if (opts.unsplash.image) _this.options += "image=" + opts.unsplash.image + "&";
             if (typeof opts.unsplash.gravity !== "undefined") _this.options += "gravity=" + opts.unsplash.gravity
