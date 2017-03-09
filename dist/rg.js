@@ -226,7 +226,7 @@ riot.tag("rg-html", '<span></span>', "", "",
 
           if (opts.content) opts.html.content = opts.content ;
 
-          this.root.innerHTML = opts.html.content ;
+          this.root.innerHTML = (typeof opts.html.content === "undefined" ? "" : opts.html.content) ;
      }) ;
 
 
@@ -484,7 +484,6 @@ riot.tag("rg-bubble",
 
 
 
-
 riot.tag("rg-button",
      '<button class="c-button {\'c-button--\' + opts.button.style} {\'c-button--rounded\':opts.button.rounded} '+
      '{\'c-button--active\':opts.button.active} {\'c-button--block\':opts.button.full} '+
@@ -619,20 +618,21 @@ riot.tag("rg-card",
      '<div class="c-card  {\'u-\' + opts.card.shadow}"> '+
      '<img class="o-image" src="{opts.card.header.image}" if="{opts.card.header.image}">'+
      ' <header class="c-card__header">' +
-     '<h2 class="c-heading c-heading--xsmall"><rg-html content="{opts.card.header.text}"></rg-html>' +
-     '<div class="c-heading__sub">{opts.card.header.subhead}</div>' +
+     '<h2 class="c-heading c-heading--small"><rg-html content="{opts.card.header.text}"></rg-html>' +
+     '<div class="c-heading__sub"><rg-html content="{opts.card.header.subhead}"></rg-html></div>' +
      '</h2>' +
      '</header>' +
      '<div class="c-card__item c-card__item{\'--\'+opts.card.header.style}" if="{opts.card.header.divider}"></div>'+
-     '  <div class"c-card__item">'+
-     '   <rg-html content="<p class=\'c-paragraph\'>{opts.card.text}</p>"></rg-html>'+
-     '<yield>'+
-     '  </div>'+
+     '  <div class"c-card__body">'+
+     '   <rg-html content="<p class=\'c-paragraph\'>{opts.card.text}</p>" if="{opts.card.text}"></rg-html>'+
+     '   <yield>'+
+     '</div>'+
      '<div class="c-card__item c-card__item{\'--\'+opts.card.footer.style}" if="{opts.card.footer.divider}"></div>'+
-     '<footer class="c-card__footer {\'c-card__footer--block\':opts.card.footer.block}">' +
-     '<p class="c-heading c-heading--xsmall"><rg-html content="{opts.card.footer.text}" if="{opts.card.footer.text}"></rg-html></p>' +
-     '<div class="c-input-group"> <button each="{button in opts.card.footer.items}" class="c-button c-button--block {\'c-button--\'+button.style}" '+
-           ' onclick="{btnclicked}">{button.text}</button>' +
+     '<footer class="c-card__footer {\'c-card__footer--block\':opts.card.footer.block}" if="{opts.card.footer.items || opts.card.footer.text}">' +
+     '<p class="c-text--quiet"><rg-html content="{opts.card.footer.text}" if="{opts.card.footer.text}"></rg-html></p>' +
+     '<div class="c-input-group"> <button each="{button in opts.card.footer.items}" class="c-button c-button--block {\'c-button--active\':button.active}'+
+     ' {\'c-button--\'+button.style}" '+
+     'disabled="{button.disabled}" onclick="{btnclicked}">{button.text}</button>' +
      ' </div>'+
      '</footer>'+
      '</div>',
@@ -640,13 +640,30 @@ riot.tag("rg-card",
      function (opts){
        var self = this ;
 
-       if (!opts.card) opts.card = {header: {}, footer: {items: []}};
+       if (!opts.card) opts.card = {contents: '', header: {}, footer: {items: []}};
 
+       cnt = self.root._innerHTML ;
+
+      if (typeof cnt === "string") {
+         cnt = cnt.trim() ;
+
+         if (cnt.startsWith("<rg-card") && cnt.endsWith("</rg-card>")) {
+           cnt = cnt.replace("</rg-card>", "") ;
+           bi = cnt.indexOf(">") ;
+           self.root._innerHTML = cnt.slice(bi+1, cnt.length) ;
+            console.log(self.root._innerHTML) ;
+            }
+         }
+
+      if (this.root._innerHTML) opts.card.contents = toMarkdown(this.root._innerHTML) ;
        if (opts.card.header.text) opts.card.header.text = toMarkdown(opts.card.header.text) ;
+       if (opts.card.header.subhead) opts.card.header.subhead = toMarkdown(opts.card.header.subhead) ;
        if (opts.card.footer.text) opts.card.footer.text = toMarkdown(opts.card.footer.text) ;
        if (opts.card.text) opts.card.text = toMarkdown(opts.card.text) ;
 
        if (opts.header) opts.card.header.text = toMarkdown(opts.header) ;
+       if (opts.subhead) opts.card.header.subhead = toMarkdown(opts.subhead) ;
+       if (opts.image) opts.card.header.image = opts.image ;
        if (opts.footer) opts.card.footer.text = toMarkdown(opts.footer) ;
        if (opts.text) opts.card.text = toMarkdown(opts.text) ;
        if (opts.shadow) opts.card.shadow = opts.shadow ;
@@ -2482,7 +2499,7 @@ riot.tag2("rg-unsplash",
             opts.unsplash.width = opts.unsplash.width || 450;
             opts.unsplash.height = opts.unsplash.height || 250;
             if (opts.unsplash.greyscale) opts.unsplash.greyscale = "g/";
-            if (opts.unsplash.random) _this.options += "random&";
+            if (opts.unsplash.random) _this.optons += "random&";
             if (opts.unsplash.blur) _this.options += "blur&";
             if (opts.unsplash.image) _this.options += "image=" + opts.unsplash.image + "&";
             if (typeof opts.unsplash.gravity !== "undefined") _this.options += "gravity=" + opts.unsplash.gravity
