@@ -1,10 +1,13 @@
-var RG2_VERSION = "3.6.1" ;
+var RG2_VERSION = "3.6.2" ;
 var RG2_INIT = false ;
 var RG2_BASE = Date.now() ;
+var RG2_CONFETTI = "rg-confetti" ;  //TODO Leave as is... rg-confetti.js needs this name, besides there can only be one! :-P
+var RG2_CONFETTI_MSG ;    //TODO Used to pass text to rg-confetti.js, yes, yes, very hacky. Will fix later.
 
 var RG2_MKDN_RENDER ;
 
 var RG_DATE_CDN_MOMENTJS = "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js";
+var RG_CODE_CDN_ACEJS = "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.js";
 
 //var RG_CHART_CDN_CHARTJS = "https://cdn.jsdelivr.net/chart.js/1.0.2/Chart.min.js" ;
 var RG_CHART_CDN_CHARTJS = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js";
@@ -86,20 +89,71 @@ function loadJS(file, callback, error, type) {
 
 
 // ----------------------------------------
-function toBoolean(bool) {
+function isBoolean(bool) {
     if (bool) {
+
+      if (typeof bool === "number") {
+         bool = Number(bool);
+
+            if (bool === 1)
+                return true;
+            else
+                return false;
+        }
+
         if (typeof bool === "string") {
-            if (bool.toLowerCase() === "true" || bool.toLowerCase() === "false")
-                if (bool.toLowerCase() === "true")
+           bool = bool.toLowerCase() ;
+
+          if (bool === "true" || bool === "false")
+              if (bool === "true")
+                  return true;
+              else
+                  return false;
+
+          if (bool === "yes" || bool === "no")
+              if (bool === "yes")
+                  return true;
+              else
+                  return false;
+
+            if (bool === "on" || bool === "off")
+                if (bool === "on")
                     return true;
                 else
                     return false;
-        } else if (typeof bool == "boolean")
-            return bool;
+
+        } else if (typeof bool === "boolean")
+            return true;
     } else
-        return undefined;
+        return false;
+
+}   // eof: isBoolean
+
+// ----------------------------------------
+
+function toBoolean(bool) {
+
+   if (bool)
+      return isBoolean(bool) ;
+   else
+      return undefined;
 
 }   // eof: toBoolean
+
+
+// ----------------------------------------
+
+function toNumber(num) {
+    if (num) {
+
+      if (typeof num === "number" || typeof num === "string")
+         return Number(num) ;
+
+    }
+ else
+   return NaN ;
+
+ } ;
 
 // ----------------------------------------
 function stripParas (text) {
@@ -145,7 +199,6 @@ function toMarkdown (content, renderCallback) {
      loadJS(RG_MARKDOWN_CDN_MARKDOWN, callbackMkdn);
   else {
      rendered = RG2_MKDN_RENDER.render(_content) ;
-     console.log("markdown output:" + rendered) ;
 
      if (renderCallback)
         renderCallback(rendered) ;
