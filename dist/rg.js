@@ -1530,7 +1530,45 @@ riot.tag("rg-input",
              opts.input.value = opts.input.max ;
           }
      }
+
+     self.on("update", function (data){
+       self.trigger("change", data) ;
+     }) ;
+
+     self.on("updated", function (data){
+       self.trigger("changed", data) ;
+     }) ;
+
   });
+
+
+  riot.tag("rg-textarea",
+    '<textarea type="{opts.input.type}" class="c-field {\'c-field--\'+opts.input.style}" required="{opts.input.required}" disabled="{opts.input.disabled}"'+
+    'value="{opts.input.value}" placeholder="{opts.input.placeholder}" size="{opts.input.size}">'+
+    '</textarea>',
+    "", "",
+    function(opts) {
+      var self = this ;
+
+      if (! opts.input) opts.input = {type: "text", style: undefined, disabled: false} ;
+
+      if (opts.value) opts.input.value = opts.value ;
+      if (opts.placeholder) opts.input.placeholder = opts.placeholder ;
+      if (opts.type) opts.input.type = opts.type ;
+      if (opts.style) opts.input.style = opts.style ;
+      if (opts.disabled) opts.input.disabled = toBoolean(opts.disabled) ;
+      if (opts.required) opts.input.required = toBoolean(opts.required) ;
+      if (opts.size) opts.input.size = toNumber(opts.size) ;
+
+      self.on("update", function (data){
+        self.trigger("change", data) ;
+      }) ;
+
+      self.on("updated", function (data){
+        self.trigger("changed", data) ;
+      }) ;
+
+    });
 
 
 riot.tag("rg-map", '<div ref="{opts.id}" class="rg-map" style="width: 100%; min-height: 10vh; height: 85vh;"></div>', 'rg-map .rg-map,[riot-tag="rg-map"] .rg-map,[data-is="rg-map"] .rg-map{ margin: 0; padding: 0; width: 100%; height: 100%; } rg-map .rg-map img,[riot-tag="rg-map"] .rg-map img,[data-is="rg-map"] .rg-map img{ max-width: inherit; }', "", function(opts) {
