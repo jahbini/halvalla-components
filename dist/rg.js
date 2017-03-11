@@ -392,7 +392,7 @@ riot.tag("rg-alerts",
 
 // Avatar images and text
 riot.tag("rg-avatar",
-    '<div class="c-avatar c-avatar {\'u-\' + opts.avatar.size}" data-text={opts.avatar.text} onclick={clicked} style="cursor: pointer;">' +
+    '<div class="c-avatar c-avatar {\'u-\' + opts.avatar.size}" data-text={opts.avatar.text} onclick={clicked} riot-style="cursor: pointer;">' +
     '  <img class="c-avatar__img" show="{opts.avatar.image}" src="{opts.avatar.image}">' +
     '  <img class="c-avatar__img" show="{opts.avatar.image2}" src="{opts.avatar.image2}">' +
     '</div>',
@@ -632,7 +632,7 @@ riot.tag("rg-breadcrumbs",
 
 riot.tag("rg-card",
      '<div class="c-card  {\'u-\' + opts.card.shadow}"> '+
-     '<img class="o-image" src="{opts.card.header.image}" if="{opts.card.header.image && (opts.card.header.text || opts.card.header.subhead)}">'+
+     '<img class="o-image" riot-src="{opts.card.header.image}" if="{opts.card.header.image && (opts.card.header.text || opts.card.header.subhead)}">'+
      ' <header class="c-card__header" if="{opts.card.header.text || opts.card.header.subhead}">' +
      '<h2 class="c-heading c-heading--small"><rg-html content="{opts.card.header.text}"></rg-html>' +
      '<div class="c-heading__sub"><rg-html content="{opts.card.header.subhead}"></rg-html></div>' +
@@ -640,8 +640,10 @@ riot.tag("rg-card",
      '</header>' +
      '<div class="c-card__item c-card__item{\'--\'+opts.card.header.style}" if="{opts.card.header.divider && opts.card.header.text}"></div>'+
      '  <div class"c-card__body">'+
+     '<div class="rg-card-content">'+
      '   <rg-html content="<p class=\'c-paragraph\'>{opts.card.text}</p>" if="{opts.card.text}"></rg-html>'+
      '   <yield>'+
+     '</div>'+
      '</div>'+
      '<div class="c-card__item c-card__item{\'--\'+opts.card.footer.style}" if="{opts.card.footer.divider && (opts.card.footer.text || (opts.card.footer.items.length > 0))}"></div>'+
      '<footer class="c-card__footer {\'c-card__footer--block\':opts.card.footer.block}" if="{(opts.card.footer.items.length > 0) || opts.card.footer.text}">' +
@@ -652,23 +654,11 @@ riot.tag("rg-card",
      ' </div>'+
      '</footer>'+
      '</div>',
-     "","",
+     ".rg-card-content {margin: 0.8em}","",
      function (opts){
        var self = this ;
 
-       if (!opts.card) opts.card = {contents: '', header: {}, footer: {items: []}};
-
-       cnt = self.root._innerHTML ;
-
-      if (typeof cnt === "string") {
-         cnt = cnt.trim() ;
-
-         if (cnt.startsWith("<rg-card") && cnt.endsWith("</rg-card>")) {
-            cnt = cnt.replace("</rg-card>", "") ;
-            bi = cnt.indexOf(">") ;
-            self.root._innerHTML = cnt.slice(bi+1, cnt.length) ;
-            }
-         }
+       if (!opts.card) opts.card = {header: {}, footer: {items: []}};
 
       if (this.root._innerHTML) opts.card.contents = toMarkdown(this.root._innerHTML) ;
        if (opts.card.header.text) opts.card.header.text = toMarkdown(opts.card.header.text) ;
@@ -680,8 +670,15 @@ riot.tag("rg-card",
        if (opts.subhead) opts.card.header.subhead = toMarkdown(opts.subhead) ;
        if (opts.image) opts.card.header.image = opts.image ;
        if (opts.footer) opts.card.footer.text = toMarkdown(opts.footer) ;
+       if (opts.block) opts.card.footer.block = toBoolean(opts.block) ;
+       if (opts.divider) opts.card.footer.divider = toBoolean(opts.divider) ;
+       if (opts.divider) opts.card.header.divider = toBoolean(opts.divider) ;
        if (opts.text) opts.card.text = toMarkdown(opts.text) ;
        if (opts.shadow) opts.card.shadow = opts.shadow ;
+
+       //TODO Need to figure out how to pass arrays from the declaration...
+       if (opts.buttons)
+          opts.card.footer.items = opts.buttons ;
 
        btnclicked = function(e) {
            selbtn = e.item.button ;
@@ -1491,7 +1488,7 @@ riot.tag("rg-include", "<div> {responseText} </div>", "", "", function(opts) {
 
 riot.tag("rg-input",
   '<input type="{opts.input.type}" class="c-field {\'c-field--\'+opts.input.style}" required="{opts.input.required}" disabled="{opts.input.disabled}"'+
-  'value="{opts.input.value}" placeholder="{opts.input.placeholder}" size="{opts.input.size}" min="{opts.input.min}" max="{opts.input.max}" step="{opts.input.step}">'+
+  'riot-value="{opts.input.value}" placeholder="{opts.input.placeholder}" size="{opts.input.size}" min="{opts.input.min}" max="{opts.input.max}" step="{opts.input.step}">'+
   '</input>',
   "", "",
   function(opts) {
@@ -1544,7 +1541,7 @@ riot.tag("rg-input",
 
   riot.tag("rg-textarea",
     '<textarea type="{opts.input.type}" class="c-field {\'c-field--\'+opts.input.style}" required="{opts.input.required}" disabled="{opts.input.disabled}"'+
-    'value="{opts.input.value}" placeholder="{opts.input.placeholder}" size="{opts.input.size}">'+
+    'riot-value="{opts.input.value}" placeholder="{opts.input.placeholder}" size="{opts.input.size}">'+
     '</textarea>',
     "", "",
     function(opts) {
@@ -1571,7 +1568,7 @@ riot.tag("rg-input",
     });
 
 
-riot.tag("rg-map", '<div ref="{opts.id}" class="rg-map" style="width: 100%; min-height: 10vh; height: 85vh;"></div>', 'rg-map .rg-map,[riot-tag="rg-map"] .rg-map,[data-is="rg-map"] .rg-map{ margin: 0; padding: 0; width: 100%; height: 100%; } rg-map .rg-map img,[riot-tag="rg-map"] .rg-map img,[data-is="rg-map"] .rg-map img{ max-width: inherit; }', "", function(opts) {
+riot.tag("rg-map", '<div ref="{opts.id}" class="rg-map" riot-style="width: 100%; min-height: 10vh; height: 85vh;"></div>', 'rg-map .rg-map,[riot-tag="rg-map"] .rg-map,[data-is="rg-map"] .rg-map{ margin: 0; padding: 0; width: 100%; height: 100%; } rg-map .rg-map img,[riot-tag="rg-map"] .rg-map img,[data-is="rg-map"] .rg-map img{ max-width: inherit; }', "", function(opts) {
     var _this = this;
     var _script_id = "rg_map_script_unqiue"; // Unique reference, to ensure Google APIs pulled in only once.
 
