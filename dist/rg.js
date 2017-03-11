@@ -632,19 +632,19 @@ riot.tag("rg-breadcrumbs",
 
 riot.tag("rg-card",
      '<div class="c-card  {\'u-\' + opts.card.shadow}"> '+
-     '<img class="o-image" src="{opts.card.header.image}" if="{opts.card.header.image}">'+
-     ' <header class="c-card__header">' +
+     '<img class="o-image" src="{opts.card.header.image}" if="{opts.card.header.image && (opts.card.header.text || opts.card.header.subhead)}">'+
+     ' <header class="c-card__header" if="{opts.card.header.text || opts.card.header.subhead}">' +
      '<h2 class="c-heading c-heading--small"><rg-html content="{opts.card.header.text}"></rg-html>' +
      '<div class="c-heading__sub"><rg-html content="{opts.card.header.subhead}"></rg-html></div>' +
      '</h2>' +
      '</header>' +
-     '<div class="c-card__item c-card__item{\'--\'+opts.card.header.style}" if="{opts.card.header.divider}"></div>'+
+     '<div class="c-card__item c-card__item{\'--\'+opts.card.header.style}" if="{opts.card.header.divider && opts.card.header.text}"></div>'+
      '  <div class"c-card__body">'+
      '   <rg-html content="<p class=\'c-paragraph\'>{opts.card.text}</p>" if="{opts.card.text}"></rg-html>'+
      '   <yield>'+
      '</div>'+
-     '<div class="c-card__item c-card__item{\'--\'+opts.card.footer.style}" if="{opts.card.footer.divider}"></div>'+
-     '<footer class="c-card__footer {\'c-card__footer--block\':opts.card.footer.block}" if="{opts.card.footer.items || opts.card.footer.text}">' +
+     '<div class="c-card__item c-card__item{\'--\'+opts.card.footer.style}" if="{opts.card.footer.divider && (opts.card.footer.text || (opts.card.footer.items.length > 0))}"></div>'+
+     '<footer class="c-card__footer {\'c-card__footer--block\':opts.card.footer.block}" if="{(opts.card.footer.items.length > 0) || opts.card.footer.text}">' +
      '<p class="c-text--quiet"><rg-html content="{opts.card.footer.text}" if="{opts.card.footer.text}"></rg-html></p>' +
      '<div class="c-input-group"> <button each="{button in opts.card.footer.items}" class="c-button c-button--block {\'c-button--active\':button.active}'+
      ' {\'c-button--\'+button.style}" '+
