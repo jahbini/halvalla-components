@@ -1568,6 +1568,63 @@ riot.tag("rg-input",
     });
 
 
+riot.tag("rg-list",
+         '<div if="{opts.list.ordered}">'+
+         '<ol class="c-list c-list--ordered {\'c-list__item--unstyled\': opts.list.unstyled} {\'c-list--inline\': opts.list.inline}">'+
+         '<virtual each="{list in opts.list.items}">'+
+         '<li class="c-list__item {\'c-list__item--unstyled\': list.unstyled}"><rg-html content="{list.text}"></rg-html>'+
+         ' <ol class="c-list c-list--ordered" each="{sub in list.items}">'+
+         '  <li class="c-list__item {\'c-list__item--unstyled\': sub.unstyled}"><rg-html content="{sub.text}"></rg-html><ol class="c-list c-list--ordered" each="{sub2 in sub.items}">'+
+         '     <li class="c-list__item {\'c-list__item--unstyled\': sub2.unstyled}"><rg-html content="{sub2.text}"></rg-html><ol class="c-list c-list--ordered" each="{sub3 in sub2.items}">'+
+         '        <li class="c-list__item {\'c-list__item--unstyled\': sub3.unstyled}"><rg-html content="{sub3.text}"></rg-html></ol></li>'+
+         '    </ol></li>'+
+         '</ol></li>'+
+         '</li></virtual></ol"></div>'+
+         '<div if="{!opts.list.ordered}">'+
+         '<ul class="c-list {\'c-list__item--unstyled\': opts.list.unstyled} {\'c-list--inline\': opts.list.inline}">'+
+         '<virtual each="{list in opts.list.items}">'+
+         '<li class="c-list__item {\'c-list__item--unstyled\': list.unstyled}"><rg-html content="{list.text}"></rg-html><ul class="c-list" each="{sub in list.items}">'+
+         '  <li class="c-list__item {\'c-list__item--unstyled\': sub.unstyled}"><rg-html content="{sub.text}"></rg-html><ul class="c-list" each="{sub2 in sub.items}">'+
+         '     <li class="c-list__item {\'c-list__item--unstyled\': sub2.unstyled}"><rg-html content="{sub2.text}"></rg-html><ul class="c-list" each="{sub3 in sub2.items}">'+
+         '        <li class="c-list__item {\'c-list__item--unstyled\': sub3.unstyled}"><rg-html content="{sub3.text}"></rg-html></ul></li>'+
+         '    </ul></li>'+
+         '</ul></li>'+
+         '</li></virtual></ul"></div>'+
+         "",
+         "", function(opts){
+             var self = this ;
+
+             if (!opts.list) opts.list = {ordered: false, unstyled: false, inline: false, items: []} ;
+
+             if (!opts.list.ordered) opts.list.ordered = false ;
+             if (!opts.list.unstyled) opts.list.unstyled = false ;
+             if (!opts.list.inline) opts.list.inline = false ;
+             if (!opts.list.items) opts.list.items = [] ;
+
+             if (opts.ordered) opts.list.ordered = toBoolean(opts.ordered) ;
+             if (opts.unstyled) opts.list.unstyled = toBoolean(opts.unstyled) ;
+             if (opts.inline) opts.list.inline = toBoolean(opts.inline) ;
+
+
+             function markdownifyList (list) {
+//               if (typeof list === "Array")
+                  for (i in list) {
+                      if (list[i].text)
+                         list[i].text = toMarkdown(list[i].text) ;
+
+                      if (list[i].items)
+                         markdownifyList(list[i].items) ;
+               }
+             }   // eof: markdownifyList
+
+             if (opts.list.items)
+                markdownifyList (opts.list.items) ;
+
+
+
+}) ;
+
+
 riot.tag("rg-map", '<div ref="{opts.id}" class="rg-map" riot-style="width: 100%; min-height: 10vh; height: 85vh;"></div>', 'rg-map .rg-map,[riot-tag="rg-map"] .rg-map,[data-is="rg-map"] .rg-map{ margin: 0; padding: 0; width: 100%; height: 100%; } rg-map .rg-map img,[riot-tag="rg-map"] .rg-map img,[data-is="rg-map"] .rg-map img{ max-width: inherit; }', "", function(opts) {
     var _this = this;
     var _script_id = "rg_map_script_unqiue"; // Unique reference, to ensure Google APIs pulled in only once.
