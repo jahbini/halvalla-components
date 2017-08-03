@@ -432,6 +432,15 @@ riot.tag("rg-avatar",
 
     });
 
+// A responsive text thing.
+riot.tag("rg-text",
+    '<span >{opts.text}<yield /></span>',
+    "", "",
+    function() {
+        var self = this;
+    });
+
+
 
 
 // Different styles of badgy things
