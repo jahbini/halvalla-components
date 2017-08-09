@@ -1,44 +1,48 @@
-riot.tag2('rg-chart', '<canvas></canvas>', 'rg-chart,[riot-tag="rg-chart"],[data-is="rg-chart"]{ display: inline-block; width: 100%; }', '', function(opts) {
-var _this = this;
+riot.tag("rg-chart",
+    "<canvas></canvas>",
+    'rg-chart,[riot-tag="rg-chart"],[data-is="rg-chart"]{ display: inline-block; width: 100%; }', "",
+    function(opts) {
 
-Chart.defaults.global.responsive = true;
+        var _this = this;
+        var dependencyOK = false ;
 
-this.on('mount', function () {
-  drawChart();
-});
+        var callback = function callback(){
+          dependencyOK = true ;
+          _this.update() ;
+        }
 
-this.on('loaded', function (c) {
-  _this.on('unmount', function () {
-    c.destroy();
-  });
-});
+        if (typeof Chart === "undefined")
+           loadJS(rg_chart_cdn_chartjs, callback) ;
+        else
+           dependencyOK = true ;
 
-var drawChart = function drawChart() {
-  if (!opts.chart) opts.chart = {};
 
-  var ctx = _this.root.querySelector('canvas').getContext('2d');
-  var chart = new Chart(ctx);
-  var c = null;
-  switch (opts.chart.type) {
-    case 'line':
-      c = chart.Line(opts.chart.data, opts.chart.options);
-      break;
-    case 'radar':
-      c = chart.Radar(opts.chart.data, opts.chart.options);
-      break;
-    case 'polar':
-      c = chart.PolarArea(opts.chart.data, opts.chart.options);
-      break;
-    case 'pie':
-      c = chart.Pie(opts.chart.data, opts.chart.options);
-      break;
-    case 'doughnut':
-      c = chart.Doughnut(opts.chart.data, opts.chart.options);
-      break;
-    default:
-      c = chart.Bar(opts.chart.data, opts.chart.options);
-      break;
-  }
-  _this.trigger('loaded', c);
-};
-});
+        this.on("mount", function() {
+             if (dependencyOK)
+                drawChart();
+           });
+
+
+        this.on("update", function() {
+          if (dependencyOK)
+             drawChart();
+        });
+
+        this.on("loaded", function(c) {
+            _this.on("unmount", function() {
+                c.destroy()
+            })
+        });
+
+        var drawChart = function drawChart() {
+
+            if (!Chart.defaults.global.responsive)
+               Chart.defaults.global.responsive = true;
+
+            if (!opts.chart) opts.chart = {};
+            var ctx = _this.root.querySelector("canvas").getContext("2d");
+            var chart = new Chart(ctx, {type: _this.opts.chart.type, data: _this.opts.chart.data, options: _this.opts.chart.options});
+
+            _this.trigger("loaded", chart)
+        }
+    });

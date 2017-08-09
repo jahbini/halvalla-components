@@ -1,7 +1,7 @@
 <rg-select>
 
-	<input type="text"
-				 name="selectfield"
+	<input type="{ opts.select.filter ? 'search' : 'text' }"
+				 ref="selectfield"
 				 class="field"
 				 placeholder="{ opts.select.placeholder }"
 				 onkeydown="{ navigate }"
@@ -30,7 +30,7 @@
 			for (let i = 0; i < opts.select.options.length; i++) {
 				let item = opts.select.options[i]
 				if (item.selected) {
-					this.selectfield.value = item.text
+					this.refs.selectfield.value = item.text
 					break
 				}
 			}
@@ -41,9 +41,9 @@
 			if (opts.select.filter)
 				this.options = this.options.filter(option => {
 						const attr = option[opts.select.filter]
-						return attr && attr.toLowerCase().indexOf(this.selectfield.value.toLowerCase()) > -1
+						return attr && attr.toLowerCase().indexOf(this.refs.selectfield.value.toLowerCase()) > -1
 				})
-			this.trigger('filter', this.selectfield.value)
+			this.trigger('filter', this.refs.selectfield.value)
 		}
 
 		function getWindowDimensions() {
