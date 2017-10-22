@@ -34,7 +34,7 @@ riot.tag("rg-placeholdit",
            opts.placeholdit.textsize = Number(opts.textsize) ;
 
         if (opts.format)
-           opts.placeholdit.text = opts.format ;
+           opts.placeholdit.format = opts.format ;
 
     })
 });
