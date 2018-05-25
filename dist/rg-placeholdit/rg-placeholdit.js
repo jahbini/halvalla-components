@@ -1,7 +1,7 @@
 riot.tag2('rg-placeholdit', '<img riot-src="https://placeholdit.imgix.net/~text?bg={opts.placeholdit.background}&txtclr={opts.placeholdit.color}&txt={opts.placeholdit.text}&txtsize={opts.placeholdit.textsize}&w={opts.placeholdit.width}&h={opts.placeholdit.height}&fm={opts.placeholdit.format}">', '', '', function(opts) {
 'use strict';
 
-undefined.on('update', function () {
+this.on('update', function () {
 	if (!opts.placeholdit) opts.placeholdit = {};
 	opts.placeholdit.width = opts.placeholdit.width || 450;
 	opts.placeholdit.height = opts.placeholdit.height || 250;

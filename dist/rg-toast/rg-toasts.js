@@ -1,11 +1,13 @@
 riot.tag2('rg-toasts', '<div if="{opts.toasts.isvisible}" class="toasts {\'toasts--\' + opts.toasts.position}"> <div each="{opts.toasts.toasts}" class="toast {\'toast--\' + type}" if="{isvisible}" onclick="{parent.toastClicked}"> {text} </div> </div>', '', '', function(opts) {
 'use strict';
 
-undefined.toastClicked = function (e) {
+var _this = this;
+
+this.toastClicked = function (e) {
 	var toast = e.item;
 	window.clearTimeout(toast.timer);
 	toast.isvisible = false;
-	undefined.trigger('select', toast);
+	_this.trigger('select', toast);
 };
 
 var _uid = 1;
@@ -13,7 +15,7 @@ var uid = function uid() {
 	return _uid++;
 };
 
-undefined.on('update', function () {
+this.on('update', function () {
 	if (!opts.toasts || !Array.isArray(opts.toasts.toasts)) return;
 	opts.toasts.position = opts.toasts.position || 'bottomright';
 	opts.toasts.toasts.forEach(function (toast) {
@@ -23,8 +25,8 @@ undefined.on('update', function () {
 			toast.startTimer = function () {
 				toast.timer = window.setTimeout(function () {
 					toast.isvisible = false;
-					undefined.trigger('close', toast);
-					undefined.update();
+					_this.trigger('close', toast);
+					_this.update();
 				}, toast.timeout || 6000);
 			};
 			toast.startTimer();

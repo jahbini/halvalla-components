@@ -1,14 +1,16 @@
 riot.tag2('rg-chart', '<canvas></canvas>', 'rg-chart,[data-is="rg-chart"]{ display: inline-block; width: 100%; }', '', function(opts) {
 'use strict';
 
+var _this = this;
+
 Chart.defaults.global.responsive = true;
 
-undefined.on('mount', function () {
+this.on('mount', function () {
   drawChart();
 });
 
-undefined.on('loaded', function (c) {
-  undefined.on('unmount', function () {
+this.on('loaded', function (c) {
+  _this.on('unmount', function () {
     c.destroy();
   });
 });
@@ -16,7 +18,7 @@ undefined.on('loaded', function (c) {
 var drawChart = function drawChart() {
   if (!opts.chart) opts.chart = {};
 
-  var ctx = undefined.root.querySelector('canvas').getContext('2d');
+  var ctx = _this.root.querySelector('canvas').getContext('2d');
   var chart = new Chart(ctx);
   var c = null;
   switch (opts.chart.type) {
@@ -39,6 +41,6 @@ var drawChart = function drawChart() {
       c = chart.Bar(opts.chart.data, opts.chart.options);
       break;
   }
-  undefined.trigger('loaded', c);
+  _this.trigger('loaded', c);
 };
 });

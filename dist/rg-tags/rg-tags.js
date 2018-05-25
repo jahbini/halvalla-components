@@ -1,31 +1,33 @@
 riot.tag2('rg-tags', '<div class="tags"> <span class="tags__container"> <button each="{opts.tags.tags}" onclick="{removeTag}" type="button" class="button button--primary tag"> {text} <span class="tag__close">×</span> </button> </span> <div class="tags__field-container"> <input type="{opts.tags.filter ? \'search\' : \'text\'}" name="selectfield" class="field" placeholder="{opts.tags.placeholder}" onkeydown="{navigate}" oninput="{filterOptions}" onfocus="{open}" readonly="{!opts.tags.filter}"> <ul class="menu menu--high" if="{opts.tags.isvisible}"> <li each="{options}" no-reorder onclick="{parent.select}" class="menu__item {\'menu__item--active\': selected, \'menu__item--disabled\': disabled, \'menu__item--hover\': active}"> {text} </li> </ul> </div> </div>', 'rg-tags .menu,[data-is="rg-tags"] .menu{ position: absolute; }', '', function(opts) {
-/* istanbul ignore next */
 'use strict';
 
+var _this = this;
+
+/* istanbul ignore next */
 if (!opts.tags) opts.tags = { options: [], tags: [] };
 if (!opts.tags.options) opts.tags.options = [];
 if (!opts.tags.tags) opts.tags.tags = [];
 
 var handleClickOutside = function handleClickOutside(e) {
-	if (!undefined.root.contains(e.target)) undefined.close();
-	undefined.update();
+	if (!_this.root.contains(e.target)) _this.close();
+	_this.update();
 };
 
 var applyFieldText = function applyFieldText() {
-	undefined.selectfield.value = '';
+	_this.selectfield.value = '';
 	for (var i = 0; i < opts.tags.options.length; i++) {
 		var item = opts.tags.options[i];
 		item.selected = false;
 	}
 };
 
-undefined.filterOptions = function () {
-	undefined.options = opts.tags.options;
-	if (opts.tags.filter) undefined.options = undefined.options.filter(function (option) {
+this.filterOptions = function () {
+	_this.options = opts.tags.options;
+	if (opts.tags.filter) _this.options = _this.options.filter(function (option) {
 		var attr = option[opts.tags.filter];
-		return attr && attr.toLowerCase().indexOf(undefined.selectfield.value.toLowerCase()) > -1;
+		return attr && attr.toLowerCase().indexOf(_this.selectfield.value.toLowerCase()) > -1;
 	});
-	undefined.trigger('filter', undefined.selectfield.value);
+	_this.trigger('filter', _this.selectfield.value);
 };
 
 function getWindowDimensions() {
@@ -40,7 +42,7 @@ function getWindowDimensions() {
 
 var positionDropdown = function positionDropdown() {
 	var w = getWindowDimensions();
-	var m = undefined.root.querySelector('.menu');
+	var m = _this.root.querySelector('.menu');
 	if (!m) return;
 	if (!opts.tags.isvisible) {
 		// Reset position
@@ -63,19 +65,19 @@ var positionDropdown = function positionDropdown() {
 	}
 };
 
-undefined.navigate = function (e) {
+this.navigate = function (e) {
 	if ([13, 38, 40].indexOf(e.keyCode) > -1 && !opts.tags.isvisible) {
 		e.preventDefault();
-		undefined.open();
+		_this.open();
 		return true;
 	}
-	var length = undefined.options.length;
+	var length = _this.options.length;
 	if (length > 0 && [13, 38, 40].indexOf(e.keyCode) > -1) {
 		e.preventDefault();
 		// Get the currently selected item
 		var activeIndex = null;
 		for (var i = 0; i < length; i++) {
-			var item = undefined.options[i];
+			var item = _this.options[i];
 			if (item.active) {
 				activeIndex = i;
 				break;
@@ -83,66 +85,66 @@ undefined.navigate = function (e) {
 		}
 
 		// We're leaving this item
-		if (activeIndex != null) undefined.options[activeIndex].active = false;
+		if (activeIndex != null) _this.options[activeIndex].active = false;
 
 		if (e.keyCode == 38) {
 			// Move the active state to the next item lower down the index
-			if (activeIndex == null || activeIndex == 0) undefined.options[length - 1].active = true;else undefined.options[activeIndex - 1].active = true;
+			if (activeIndex == null || activeIndex == 0) _this.options[length - 1].active = true;else _this.options[activeIndex - 1].active = true;
 		} else if (e.keyCode == 40) {
 			// Move the active state to the next item higher up the index
-			if (activeIndex == null || activeIndex == length - 1) undefined.options[0].active = true;else undefined.options[activeIndex + 1].active = true;
+			if (activeIndex == null || activeIndex == length - 1) _this.options[0].active = true;else _this.options[activeIndex + 1].active = true;
 		} else if (e.keyCode == 13 && activeIndex != null) {
-			undefined.select({
-				item: undefined.options[activeIndex]
+			_this.select({
+				item: _this.options[activeIndex]
 			});
 		}
 	}
 	return true;
 };
 
-undefined.open = function () {
+this.open = function () {
 	opts.tags.isvisible = true;
-	undefined.trigger('open');
+	_this.trigger('open');
 };
 
-undefined.close = function () {
+this.close = function () {
 	if (opts.tags.isvisible) {
 		opts.tags.isvisible = false;
-		undefined.trigger('close');
+		_this.trigger('close');
 	}
 };
 
-undefined.select = function (e) {
+this.select = function (e) {
 	opts.tags.options.forEach(function (i) {
 		return i.selected = false;
 	});
 	e.item.selected = true;
-	undefined.addTag(e.item);
+	_this.addTag(e.item);
 	applyFieldText();
-	undefined.filterOptions();
-	undefined.trigger('select', e.item);
+	_this.filterOptions();
+	_this.trigger('select', e.item);
 };
 
-undefined.addTag = function (item) {
+this.addTag = function (item) {
 	if (opts.tags.tags.indexOf(item) == -1) {
 		opts.tags.tags.push(item);
 	}
 };
 
-undefined.removeTag = function (e) {
+this.removeTag = function (e) {
 	opts.tags.tags = opts.tags.tags.filter(function (tag) {
 		if (tag._id != e.item._id) return tag;
 	});
 };
 
-undefined.on('mount', function () {
+this.on('mount', function () {
 	applyFieldText();
-	undefined.filterOptions();
+	_this.filterOptions();
 	document.addEventListener('click', handleClickOutside);
-	undefined.update();
+	_this.update();
 });
 
-undefined.on('update', function () {
+this.on('update', function () {
 	opts.tags.options.forEach(function (item) {
 		item._id = item._id || (Math.floor(Math.random() * 60466175) + 1679615).toString(36);
 	});
@@ -154,7 +156,7 @@ undefined.on('update', function () {
 	positionDropdown();
 });
 
-undefined.on('unmount', function () {
+this.on('unmount', function () {
 	document.removeEventListener('click', handleClickOutside);
 });
 });

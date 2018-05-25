@@ -1,9 +1,11 @@
 riot.tag2('rg-code', '<div class="editor"></div>', 'rg-code .editor,[data-is="rg-code"] .editor{ position: absolute; top: 0; right: 0; bottom: 0; left: 0; }', '', function(opts) {
 'use strict';
 
+var _this = this;
+
 if (!opts.editor) opts.editor = { code: '' };
 
-var editor = undefined;
+var editor = void 0;
 
 var setupEditor = function setupEditor() {
 	editor.setTheme('ace/theme/' + (opts.editor.theme || 'monokai'));
@@ -14,11 +16,11 @@ var setupEditor = function setupEditor() {
 	editor.setReadOnly(opts.editor.readonly);
 };
 
-undefined.on('mount', function () {
-	editor = ace.edit(undefined.root.querySelector('.editor'));
+this.on('mount', function () {
+	editor = ace.edit(_this.root.querySelector('.editor'));
 	editor.$blockScrolling = Infinity;
 
-	undefined.on('update', function () {
+	_this.on('update', function () {
 		setupEditor();
 		if (opts.editor.code != editor.getValue()) editor.setValue(opts.editor.code, 1);
 	});
@@ -26,7 +28,7 @@ undefined.on('mount', function () {
 		var req = new XMLHttpRequest();
 		req.onload = function (resp) {
 			opts.editor.code = resp;
-			undefined.update();
+			_this.update();
 		};
 		req.open('get', opts.url, true);
 		req.send();
@@ -34,9 +36,9 @@ undefined.on('mount', function () {
 	editor.setValue(opts.editor.code, 1);
 	editor.getSession().on('change', function (e) {
 		opts.editor.code = editor.getValue();
-		undefined.trigger('onchange', editor.getValue());
+		_this.trigger('onchange', editor.getValue());
 	});
 	setupEditor();
-	undefined.update();
+	_this.update();
 });
 });

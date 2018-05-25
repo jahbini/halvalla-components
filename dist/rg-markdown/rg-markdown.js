@@ -1,26 +1,26 @@
 riot.tag2('rg-markdown', '', '', '', function(opts) {
 'use strict';
 
+var _this = this;
+
 if (commonmark) {
-	undefined.reader = new commonmark.Parser();
-	undefined.writer = new commonmark.HtmlRenderer();
+	this.reader = new commonmark.Parser();
+	this.writer = new commonmark.HtmlRenderer();
 }
 
-undefined.on('update', function () {
+this.on('update', function () {
 	if (!opts.markdown) opts.markdown = {};
 	if (opts.markdown.content) {
-		undefined.root.innerHTML = undefined.writer.render(undefined.reader.parse(opts.markdown.content));
+		_this.root.innerHTML = _this.writer.render(_this.reader.parse(opts.markdown.content));
 	} else if (opts.markdown.url) {
-		(function () {
-			var req = new XMLHttpRequest();
-			req.onload = function (resp) {
-				undefined.root.innerHTML = undefined.writer.render(undefined.reader.parse(req.responseText));
-				undefined.trigger('loaded');
-			};
-			req.open('get', opts.markdown.url, true);
-			req.send();
-			undefined.trigger('loading');
-		})();
+		var req = new XMLHttpRequest();
+		req.onload = function (resp) {
+			_this.root.innerHTML = _this.writer.render(_this.reader.parse(req.responseText));
+			_this.trigger('loaded');
+		};
+		req.open('get', opts.markdown.url, true);
+		req.send();
+		_this.trigger('loading');
 	}
 });
 });

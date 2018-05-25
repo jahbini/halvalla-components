@@ -1,18 +1,20 @@
 riot.tag2('rg-credit-card-number', '<input type="text" name="cardnumber" class="field card-no {icon} {\'field--success\': opts.card.valid}" oninput="{validate}" placeholder="{opts.card.placeholder}">', 'rg-credit-card-number .card-no,[data-is="rg-credit-card-number"] .card-no{ padding-right: 60px; background-repeat: no-repeat; background-position: right center; background-size: 60px; } rg-credit-card-number .amex,[data-is="rg-credit-card-number"] .amex{ background-image: url(img/amex.png); } rg-credit-card-number .diners_club,[data-is="rg-credit-card-number"] .diners_club{ background-image: url(img/diners_club.png); } rg-credit-card-number .discover,[data-is="rg-credit-card-number"] .discover{ background-image: url(img/discover.png); } rg-credit-card-number .jcb,[data-is="rg-credit-card-number"] .jcb{ background-image: url(img/jcb.png); } rg-credit-card-number .mastercard,[data-is="rg-credit-card-number"] .mastercard{ background-image: url(img/mastercard.png); } rg-credit-card-number .visa,[data-is="rg-credit-card-number"] .visa{ background-image: url(img/visa.png); }', '', function(opts) {
 'use strict';
 
+var _this2 = this;
+
 if (!opts.card) opts.card = { cardnumber: '' };
 
-undefined.on('update', function () {
-	if (undefined.cardnumber.value != opts.card.cardnumber) undefined.cardnumber.value = opts.card.cardnumber;
-	undefined.validate();
+this.on('update', function () {
+	if (_this2.cardnumber.value != opts.card.cardnumber) _this2.cardnumber.value = opts.card.cardnumber;
+	_this2.validate();
 });
 
-undefined.validate = function () {
-	opts.card.cardnumber = undefined.cardnumber.value;
+this.validate = function () {
+	opts.card.cardnumber = _this2.cardnumber.value;
 	var res = validateCreditCard(opts.card.cardnumber);
 	opts.card.valid = res.valid;
-	undefined.icon = opts.card.valid ? res.card_type.name : '';
+	_this2.icon = opts.card.valid ? res.card_type.name : '';
 };
 
 function validateCreditCard(input) {
@@ -75,7 +77,7 @@ function validateCreditCard(input) {
 	var options = {};
 
 	if (options.accept == null) {
-		options.accept = (function () {
+		options.accept = function () {
 			var _i, _len, _results;
 			_results = [];
 			for (_i = 0, _len = card_types.length; _i < _len; _i++) {
@@ -83,12 +85,12 @@ function validateCreditCard(input) {
 				_results.push(card.name);
 			}
 			return _results;
-		})();
+		}();
 	}
 	_ref = options.accept;
 	for (_i = 0, _len = _ref.length; _i < _len; _i++) {
 		card_type = _ref[_i];
-		if (__indexOf.call((function () {
+		if (__indexOf.call(function () {
 			var _j, _len1, _results;
 			_results = [];
 			for (_j = 0, _len1 = card_types.length; _j < _len1; _j++) {
@@ -96,24 +98,24 @@ function validateCreditCard(input) {
 				_results.push(card.name);
 			}
 			return _results;
-		})(), card_type) < 0) {
+		}(), card_type) < 0) {
 			throw "Credit card type '" + card_type + "' is not supported";
 		}
 	}
 
-	get_card_type = function (number) {
+	get_card_type = function get_card_type(number) {
 		var _j, _len1, _ref1;
-		_ref1 = (function () {
+		_ref1 = function () {
 			var _k, _len1, _ref1, _results;
 			_results = [];
 			for (_k = 0, _len1 = card_types.length; _k < _len1; _k++) {
 				card = card_types[_k];
-				if ((_ref1 = card.name, __indexOf.call(options.accept, _ref1) >= 0)) {
+				if (_ref1 = card.name, __indexOf.call(options.accept, _ref1) >= 0) {
 					_results.push(card);
 				}
 			}
 			return _results;
-		})();
+		}();
 		for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
 			card_type = _ref1[_j];
 			if (number.match(card_type.pattern)) {
@@ -123,7 +125,7 @@ function validateCreditCard(input) {
 		return null;
 	};
 
-	is_valid_luhn = function (number) {
+	is_valid_luhn = function is_valid_luhn(number) {
 		var digit, n, sum, _j, _len1, _ref1;
 		sum = 0;
 		_ref1 = number.split('').reverse();
@@ -144,12 +146,12 @@ function validateCreditCard(input) {
 		return sum % 10 === 0;
 	};
 
-	is_valid_length = function (number, card_type) {
+	is_valid_length = function is_valid_length(number, card_type) {
 		var _ref1;
 		return _ref1 = number.length, __indexOf.call(card_type.valid_length, _ref1) >= 0;
 	};
 
-	validate_number = (function (_this) {
+	validate_number = function (_this) {
 		return function (number) {
 			var length_valid, luhn_valid;
 			card_type = get_card_type(number);
@@ -166,17 +168,17 @@ function validateCreditCard(input) {
 				length_valid: length_valid
 			};
 		};
-	})(this);
+	}(this);
 
-	normalize = function (number) {
+	normalize = function normalize(number) {
 		return number.replace(/[ -]/g, '');
 	};
 
-	validate = (function (_this) {
+	validate = function (_this) {
 		return function () {
 			return validate_number(normalize(input));
 		};
-	})(this);
+	}(this);
 
 	return validate(input);
 }

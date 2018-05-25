@@ -1,6 +1,8 @@
 riot.tag2('rg-date', '<div class="container"> <input type="text" class="field" onclick="{open}" riot-value="{opts.date.date.format(format)}" readonly> <div class="calendar calendar--high" if="{opts.date.isvisible}"> <button class="calendar__control" disabled="{opts.date.min.isSame(opts.date.date, \'year\')}" onclick="{prevYear}">‹</button> <div class="calendar__header">{opts.date.date.format(yearFormat)}</div> <button class="calendar__control" disabled="{opts.date.max.isSame(opts.date.date, \'year\')}" onclick="{nextYear}">›</button> <button class="calendar__control" disabled="{opts.date.min.isSame(opts.date.date, \'month\')}" onclick="{prevMonth}">‹</button> <div class="calendar__header">{opts.date.date.format(monthFormat)}</div> <button class="calendar__control" disabled="{opts.date.max.isSame(opts.date.date, \'month\')}" onclick="{nextMonth}">›</button> <div class="calendar__day">Mo</div> <div class="calendar__day">Tu</div> <div class="calendar__day">We</div> <div class="calendar__day">Th</div> <div class="calendar__day">Fr</div> <div class="calendar__day">Sa</div> <div class="calendar__day">Su</div> <button class="calendar__date {\'calendar__date--selected\': day.selected, \'calendar__date--today\': day.today}" disabled="{day.disabled}" each="{day in startBuffer}" onclick="{select}">{day.date.format(dayFormat)}</button> <button class="calendar__date calendar__date--in-month {\'calendar__date--selected\': day.selected, \'calendar__date--today\': day.today}" disabled="{day.disabled}" each="{day in days}" onclick="{select}">{day.date.format(dayFormat)}</button> <button class="calendar__date {\'calendar__date--selected\': day.selected, \'calendar__date--today\': day.today}" disabled="{day.disabled}" each="{day in endBuffer}" onclick="{select}">{day.date.format(dayFormat)}</button> <button class="button button--block button--primary" disabled="{opts.date.min.isAfter(moment(), \'day\') || opts.date.max.isBefore(moment(), \'day\')}" onclick="{setToday}">Today</button> </div> </div>', 'rg-date .container,[data-is="rg-date"] .container{ position: relative; display: inline-block; cursor: pointer; } rg-date .calendar,[data-is="rg-date"] .calendar{ position: absolute; min-width: 300px; margin-top: .5em; left: 0; }', '', function(opts) {
 'use strict';
 
+var _this = this;
+
 var toMoment = function toMoment(d) {
 	if (!moment.isMoment(d)) d = moment(d);
 	if (d.isValid()) return d;
@@ -8,8 +10,8 @@ var toMoment = function toMoment(d) {
 };
 
 var handleClickOutside = function handleClickOutside(e) {
-	if (!undefined.root.contains(e.target)) undefined.close();
-	undefined.update();
+	if (!_this.root.contains(e.target)) _this.close();
+	_this.update();
 };
 
 var dayObj = function dayObj(dayDate) {
@@ -24,14 +26,14 @@ var dayObj = function dayObj(dayDate) {
 };
 
 var buildCalendar = function buildCalendar() {
-	undefined.format = 'LL';
-	undefined.yearFormat = 'YYYY';
-	undefined.monthFormat = 'MMMM';
-	undefined.dayFormat = 'DD';
+	_this.format = 'LL';
+	_this.yearFormat = 'YYYY';
+	_this.monthFormat = 'MMMM';
+	_this.dayFormat = 'DD';
 
-	undefined.days = [];
-	undefined.startBuffer = [];
-	undefined.endBuffer = [];
+	_this.days = [];
+	_this.startBuffer = [];
+	_this.endBuffer = [];
 
 	var begin = moment(opts.date.date).startOf('month');
 	var daysInMonth = moment(opts.date.date).daysInMonth();
@@ -39,21 +41,21 @@ var buildCalendar = function buildCalendar() {
 
 	for (var i = begin.isoWeekday() - 1; i > 0; i -= 1) {
 		var d = moment(begin).subtract(i, 'days');
-		undefined.startBuffer.push(dayObj(d));
+		_this.startBuffer.push(dayObj(d));
 	}
 
-	for (var i = 0; i < daysInMonth; i++) {
-		var current = moment(begin).add(i, 'days');
-		undefined.days.push(dayObj(current));
+	for (var _i = 0; _i < daysInMonth; _i++) {
+		var current = moment(begin).add(_i, 'days');
+		_this.days.push(dayObj(current));
 	}
 
-	for (var i = end.isoWeekday() + 1; i <= 7; i++) {
-		var d = moment(end).add(i - end.isoWeekday(), 'days');
-		undefined.endBuffer.push(dayObj(d));
+	for (var _i2 = end.isoWeekday() + 1; _i2 <= 7; _i2++) {
+		var _d = moment(end).add(_i2 - end.isoWeekday(), 'days');
+		_this.endBuffer.push(dayObj(_d));
 	}
 };
 
-undefined.on('mount', function () {
+this.on('mount', function () {
 	if (!opts.date) opts.date = { date: moment() };
 	if (!opts.date.date) opts.date.date = moment();
 	opts.date.date = toMoment(opts.date.date);
@@ -74,54 +76,54 @@ undefined.on('mount', function () {
 		}
 	}
 
-	undefined.on('update', function () {
+	_this.on('update', function () {
 		opts.date.date = toMoment(opts.date.date);
 		buildCalendar();
 		positionDropdown();
 	});
 	document.addEventListener('click', handleClickOutside);
-	undefined.update();
+	_this.update();
 });
 
-undefined.on('unmount', function () {
+this.on('unmount', function () {
 	document.removeEventListener('click', handleClickOutside);
 });
 
-undefined.open = function () {
+this.open = function () {
 	opts.date.isvisible = true;
-	undefined.trigger('open');
+	_this.trigger('open');
 };
 
-undefined.close = function () {
+this.close = function () {
 	if (opts.date.isvisible) {
 		opts.date.isvisible = false;
-		undefined.trigger('close');
+		_this.trigger('close');
 	}
 };
 
-undefined.select = function (e) {
+this.select = function (e) {
 	opts.date.date = e.item.day.date;
-	undefined.trigger('select', opts.date.date);
+	_this.trigger('select', opts.date.date);
 };
 
-undefined.setToday = function () {
+this.setToday = function () {
 	opts.date.date = moment();
-	undefined.trigger('select', opts.date.date);
+	_this.trigger('select', opts.date.date);
 };
 
-undefined.prevYear = function () {
+this.prevYear = function () {
 	opts.date.date = opts.date.date.subtract(1, 'year');
 };
 
-undefined.nextYear = function () {
+this.nextYear = function () {
 	opts.date.date = opts.date.date.add(1, 'year');
 };
 
-undefined.prevMonth = function () {
+this.prevMonth = function () {
 	opts.date.date = opts.date.date.subtract(1, 'month');
 };
 
-undefined.nextMonth = function () {
+this.nextMonth = function () {
 	opts.date.date = opts.date.date.add(1, 'month');
 };
 
@@ -137,7 +139,7 @@ function getWindowDimensions() {
 
 var positionDropdown = function positionDropdown() {
 	var w = getWindowDimensions();
-	var m = undefined.root.querySelector('.calendar');
+	var m = _this.root.querySelector('.calendar');
 	if (!m) return;
 	if (!opts.date.isvisible) {
 		// Reset position
