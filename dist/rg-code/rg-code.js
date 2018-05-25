@@ -1,5 +1,5 @@
-riot.tag2('rg-code', '<div class="editor"></div>', 'rg-code .editor,[riot-tag="rg-code"] .editor,[data-is="rg-code"] .editor{ position: absolute; top: 0; right: 0; bottom: 0; left: 0; }', '', function(opts) {
-var _this = this;
+riot.tag2('rg-code', '<div class="editor"></div>', 'rg-code .editor,[data-is="rg-code"] .editor{ position: absolute; top: 0; right: 0; bottom: 0; left: 0; }', '', function(opts) {
+'use strict';
 
 if (!opts.editor) opts.editor = { code: '' };
 
@@ -14,11 +14,11 @@ var setupEditor = function setupEditor() {
 	editor.setReadOnly(opts.editor.readonly);
 };
 
-this.on('mount', function () {
-	editor = ace.edit(_this.root.querySelector('.editor'));
+undefined.on('mount', function () {
+	editor = ace.edit(undefined.root.querySelector('.editor'));
 	editor.$blockScrolling = Infinity;
 
-	_this.on('update', function () {
+	undefined.on('update', function () {
 		setupEditor();
 		if (opts.editor.code != editor.getValue()) editor.setValue(opts.editor.code, 1);
 	});
@@ -26,7 +26,7 @@ this.on('mount', function () {
 		var req = new XMLHttpRequest();
 		req.onload = function (resp) {
 			opts.editor.code = resp;
-			_this.update();
+			undefined.update();
 		};
 		req.open('get', opts.url, true);
 		req.send();
@@ -34,9 +34,9 @@ this.on('mount', function () {
 	editor.setValue(opts.editor.code, 1);
 	editor.getSession().on('change', function (e) {
 		opts.editor.code = editor.getValue();
-		_this.trigger('onchange', editor.getValue());
+		undefined.trigger('onchange', editor.getValue());
 	});
 	setupEditor();
-	_this.update();
+	undefined.update();
 });
 });

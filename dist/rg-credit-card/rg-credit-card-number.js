@@ -1,18 +1,18 @@
-riot.tag2('rg-credit-card-number', '<input type="text" name="cardnumber" class="field card-no {icon} {\'field--success\': opts.card.valid}" oninput="{validate}" placeholder="{opts.card.placeholder}">', 'rg-credit-card-number .card-no,[riot-tag="rg-credit-card-number"] .card-no,[data-is="rg-credit-card-number"] .card-no{ padding-right: 60px; background-repeat: no-repeat; background-position: right center; background-size: 60px; } rg-credit-card-number .amex,[riot-tag="rg-credit-card-number"] .amex,[data-is="rg-credit-card-number"] .amex{ background-image: url(img/amex.png); } rg-credit-card-number .diners_club,[riot-tag="rg-credit-card-number"] .diners_club,[data-is="rg-credit-card-number"] .diners_club{ background-image: url(img/diners_club.png); } rg-credit-card-number .discover,[riot-tag="rg-credit-card-number"] .discover,[data-is="rg-credit-card-number"] .discover{ background-image: url(img/discover.png); } rg-credit-card-number .jcb,[riot-tag="rg-credit-card-number"] .jcb,[data-is="rg-credit-card-number"] .jcb{ background-image: url(img/jcb.png); } rg-credit-card-number .mastercard,[riot-tag="rg-credit-card-number"] .mastercard,[data-is="rg-credit-card-number"] .mastercard{ background-image: url(img/mastercard.png); } rg-credit-card-number .visa,[riot-tag="rg-credit-card-number"] .visa,[data-is="rg-credit-card-number"] .visa{ background-image: url(img/visa.png); }', '', function(opts) {
-var _this2 = this;
+riot.tag2('rg-credit-card-number', '<input type="text" name="cardnumber" class="field card-no {icon} {\'field--success\': opts.card.valid}" oninput="{validate}" placeholder="{opts.card.placeholder}">', 'rg-credit-card-number .card-no,[data-is="rg-credit-card-number"] .card-no{ padding-right: 60px; background-repeat: no-repeat; background-position: right center; background-size: 60px; } rg-credit-card-number .amex,[data-is="rg-credit-card-number"] .amex{ background-image: url(img/amex.png); } rg-credit-card-number .diners_club,[data-is="rg-credit-card-number"] .diners_club{ background-image: url(img/diners_club.png); } rg-credit-card-number .discover,[data-is="rg-credit-card-number"] .discover{ background-image: url(img/discover.png); } rg-credit-card-number .jcb,[data-is="rg-credit-card-number"] .jcb{ background-image: url(img/jcb.png); } rg-credit-card-number .mastercard,[data-is="rg-credit-card-number"] .mastercard{ background-image: url(img/mastercard.png); } rg-credit-card-number .visa,[data-is="rg-credit-card-number"] .visa{ background-image: url(img/visa.png); }', '', function(opts) {
+'use strict';
 
 if (!opts.card) opts.card = { cardnumber: '' };
 
-this.on('update', function () {
-	if (_this2.cardnumber.value != opts.card.cardnumber) _this2.cardnumber.value = opts.card.cardnumber;
-	_this2.validate();
+undefined.on('update', function () {
+	if (undefined.cardnumber.value != opts.card.cardnumber) undefined.cardnumber.value = opts.card.cardnumber;
+	undefined.validate();
 });
 
-this.validate = function () {
-	opts.card.cardnumber = _this2.cardnumber.value;
+undefined.validate = function () {
+	opts.card.cardnumber = undefined.cardnumber.value;
 	var res = validateCreditCard(opts.card.cardnumber);
 	opts.card.valid = res.valid;
-	_this2.icon = opts.card.valid ? res.card_type.name : '';
+	undefined.icon = opts.card.valid ? res.card_type.name : '';
 };
 
 function validateCreditCard(input) {

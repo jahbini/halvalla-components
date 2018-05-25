@@ -1,14 +1,14 @@
 riot.tag2('rg-alerts', '<div class="alerts"> <div each="{opts.alerts}" class="alerts__alert {\'alerts__alert--\' + type}" if="{isvisible}" onclick="{select}"> <button class="button button--close" if="{dismissable != false}" onclick="{parent.dismiss}"> &times; </button> {text} </div> </div>', '', '', function(opts) {
-var _this = this;
+'use strict';
 
-this.on('update', function () {
+undefined.on('update', function () {
 	if (!opts.alerts) return;
 	opts.alerts.forEach(function (alert) {
 		if (typeof alert.isvisible === 'undefined') alert.isvisible = true;
 		if (alert.timeout) {
 			alert.startTimer = function () {
 				alert.timer = setTimeout(function () {
-					_this.dismiss({
+					undefined.dismiss({
 						item: alert
 					});
 				}, alert.timeout);
@@ -18,17 +18,17 @@ this.on('update', function () {
 	});
 });
 
-this.dismiss = function (e) {
+undefined.dismiss = function (e) {
 	var alert = e.item;
 	alert.isvisible = false;
 	clearTimeout(alert.timer);
-	_this.trigger('dismiss', alert);
-	_this.update();
+	undefined.trigger('dismiss', alert);
+	undefined.update();
 };
 
-this.select = function (e) {
+undefined.select = function (e) {
 	var alert = e.item;
 	if (alert.onclick) alert.onclick(alert);
-	_this.trigger('select', alert);
+	undefined.trigger('select', alert);
 };
 });

@@ -1,5 +1,5 @@
-riot.tag2('rg-date', '<div class="container"> <input type="text" class="field" onclick="{open}" value="{opts.date.date.format(format)}" readonly> <div class="calendar calendar--high" if="{opts.date.isvisible}"> <button class="calendar__control" __disabled="{opts.date.min.isSame(opts.date.date, \'year\')}" onclick="{prevYear}">‹</button> <div class="calendar__header">{opts.date.date.format(yearFormat)}</div> <button class="calendar__control" __disabled="{opts.date.max.isSame(opts.date.date, \'year\')}" onclick="{nextYear}">›</button> <button class="calendar__control" __disabled="{opts.date.min.isSame(opts.date.date, \'month\')}" onclick="{prevMonth}">‹</button> <div class="calendar__header">{opts.date.date.format(monthFormat)}</div> <button class="calendar__control" __disabled="{opts.date.max.isSame(opts.date.date, \'month\')}" onclick="{nextMonth}">›</button> <div class="calendar__day">Mo</div> <div class="calendar__day">Tu</div> <div class="calendar__day">We</div> <div class="calendar__day">Th</div> <div class="calendar__day">Fr</div> <div class="calendar__day">Sa</div> <div class="calendar__day">Su</div> <button class="calendar__date {\'calendar__date--selected\': day.selected, \'calendar__date--today\': day.today}" __disabled="{day.disabled}" each="{day in startBuffer}" onclick="{select}">{day.date.format(dayFormat)}</button> <button class="calendar__date calendar__date--in-month {\'calendar__date--selected\': day.selected, \'calendar__date--today\': day.today}" __disabled="{day.disabled}" each="{day in days}" onclick="{select}">{day.date.format(dayFormat)}</button> <button class="calendar__date {\'calendar__date--selected\': day.selected, \'calendar__date--today\': day.today}" __disabled="{day.disabled}" each="{day in endBuffer}" onclick="{select}">{day.date.format(dayFormat)}</button> <button class="button button--block button--primary" __disabled="{opts.date.min.isAfter(moment(), \'day\') || opts.date.max.isBefore(moment(), \'day\')}" onclick="{setToday}">Today</button> </div> </div>', 'rg-date .container,[riot-tag="rg-date"] .container,[data-is="rg-date"] .container{ position: relative; display: inline-block; cursor: pointer; } rg-date .calendar,[riot-tag="rg-date"] .calendar,[data-is="rg-date"] .calendar{ position: absolute; min-width: 300px; margin-top: .5em; left: 0; }', '', function(opts) {
-var _this = this;
+riot.tag2('rg-date', '<div class="container"> <input type="text" class="field" onclick="{open}" riot-value="{opts.date.date.format(format)}" readonly> <div class="calendar calendar--high" if="{opts.date.isvisible}"> <button class="calendar__control" disabled="{opts.date.min.isSame(opts.date.date, \'year\')}" onclick="{prevYear}">‹</button> <div class="calendar__header">{opts.date.date.format(yearFormat)}</div> <button class="calendar__control" disabled="{opts.date.max.isSame(opts.date.date, \'year\')}" onclick="{nextYear}">›</button> <button class="calendar__control" disabled="{opts.date.min.isSame(opts.date.date, \'month\')}" onclick="{prevMonth}">‹</button> <div class="calendar__header">{opts.date.date.format(monthFormat)}</div> <button class="calendar__control" disabled="{opts.date.max.isSame(opts.date.date, \'month\')}" onclick="{nextMonth}">›</button> <div class="calendar__day">Mo</div> <div class="calendar__day">Tu</div> <div class="calendar__day">We</div> <div class="calendar__day">Th</div> <div class="calendar__day">Fr</div> <div class="calendar__day">Sa</div> <div class="calendar__day">Su</div> <button class="calendar__date {\'calendar__date--selected\': day.selected, \'calendar__date--today\': day.today}" disabled="{day.disabled}" each="{day in startBuffer}" onclick="{select}">{day.date.format(dayFormat)}</button> <button class="calendar__date calendar__date--in-month {\'calendar__date--selected\': day.selected, \'calendar__date--today\': day.today}" disabled="{day.disabled}" each="{day in days}" onclick="{select}">{day.date.format(dayFormat)}</button> <button class="calendar__date {\'calendar__date--selected\': day.selected, \'calendar__date--today\': day.today}" disabled="{day.disabled}" each="{day in endBuffer}" onclick="{select}">{day.date.format(dayFormat)}</button> <button class="button button--block button--primary" disabled="{opts.date.min.isAfter(moment(), \'day\') || opts.date.max.isBefore(moment(), \'day\')}" onclick="{setToday}">Today</button> </div> </div>', 'rg-date .container,[data-is="rg-date"] .container{ position: relative; display: inline-block; cursor: pointer; } rg-date .calendar,[data-is="rg-date"] .calendar{ position: absolute; min-width: 300px; margin-top: .5em; left: 0; }', '', function(opts) {
+'use strict';
 
 var toMoment = function toMoment(d) {
 	if (!moment.isMoment(d)) d = moment(d);
@@ -8,8 +8,8 @@ var toMoment = function toMoment(d) {
 };
 
 var handleClickOutside = function handleClickOutside(e) {
-	if (!_this.root.contains(e.target)) _this.close();
-	_this.update();
+	if (!undefined.root.contains(e.target)) undefined.close();
+	undefined.update();
 };
 
 var dayObj = function dayObj(dayDate) {
@@ -24,14 +24,14 @@ var dayObj = function dayObj(dayDate) {
 };
 
 var buildCalendar = function buildCalendar() {
-	_this.format = 'LL';
-	_this.yearFormat = 'YYYY';
-	_this.monthFormat = 'MMMM';
-	_this.dayFormat = 'DD';
+	undefined.format = 'LL';
+	undefined.yearFormat = 'YYYY';
+	undefined.monthFormat = 'MMMM';
+	undefined.dayFormat = 'DD';
 
-	_this.days = [];
-	_this.startBuffer = [];
-	_this.endBuffer = [];
+	undefined.days = [];
+	undefined.startBuffer = [];
+	undefined.endBuffer = [];
 
 	var begin = moment(opts.date.date).startOf('month');
 	var daysInMonth = moment(opts.date.date).daysInMonth();
@@ -39,21 +39,21 @@ var buildCalendar = function buildCalendar() {
 
 	for (var i = begin.isoWeekday() - 1; i > 0; i -= 1) {
 		var d = moment(begin).subtract(i, 'days');
-		_this.startBuffer.push(dayObj(d));
+		undefined.startBuffer.push(dayObj(d));
 	}
 
 	for (var i = 0; i < daysInMonth; i++) {
 		var current = moment(begin).add(i, 'days');
-		_this.days.push(dayObj(current));
+		undefined.days.push(dayObj(current));
 	}
 
 	for (var i = end.isoWeekday() + 1; i <= 7; i++) {
 		var d = moment(end).add(i - end.isoWeekday(), 'days');
-		_this.endBuffer.push(dayObj(d));
+		undefined.endBuffer.push(dayObj(d));
 	}
 };
 
-this.on('mount', function () {
+undefined.on('mount', function () {
 	if (!opts.date) opts.date = { date: moment() };
 	if (!opts.date.date) opts.date.date = moment();
 	opts.date.date = toMoment(opts.date.date);
@@ -74,54 +74,54 @@ this.on('mount', function () {
 		}
 	}
 
-	_this.on('update', function () {
+	undefined.on('update', function () {
 		opts.date.date = toMoment(opts.date.date);
 		buildCalendar();
 		positionDropdown();
 	});
 	document.addEventListener('click', handleClickOutside);
-	_this.update();
+	undefined.update();
 });
 
-this.on('unmount', function () {
+undefined.on('unmount', function () {
 	document.removeEventListener('click', handleClickOutside);
 });
 
-this.open = function () {
+undefined.open = function () {
 	opts.date.isvisible = true;
-	_this.trigger('open');
+	undefined.trigger('open');
 };
 
-this.close = function () {
+undefined.close = function () {
 	if (opts.date.isvisible) {
 		opts.date.isvisible = false;
-		_this.trigger('close');
+		undefined.trigger('close');
 	}
 };
 
-this.select = function (e) {
+undefined.select = function (e) {
 	opts.date.date = e.item.day.date;
-	_this.trigger('select', opts.date.date);
+	undefined.trigger('select', opts.date.date);
 };
 
-this.setToday = function () {
+undefined.setToday = function () {
 	opts.date.date = moment();
-	_this.trigger('select', opts.date.date);
+	undefined.trigger('select', opts.date.date);
 };
 
-this.prevYear = function () {
+undefined.prevYear = function () {
 	opts.date.date = opts.date.date.subtract(1, 'year');
 };
 
-this.nextYear = function () {
+undefined.nextYear = function () {
 	opts.date.date = opts.date.date.add(1, 'year');
 };
 
-this.prevMonth = function () {
+undefined.prevMonth = function () {
 	opts.date.date = opts.date.date.subtract(1, 'month');
 };
 
-this.nextMonth = function () {
+undefined.nextMonth = function () {
 	opts.date.date = opts.date.date.add(1, 'month');
 };
 
@@ -137,21 +137,25 @@ function getWindowDimensions() {
 
 var positionDropdown = function positionDropdown() {
 	var w = getWindowDimensions();
-	var m = _this.root.querySelector('.calendar');
+	var m = undefined.root.querySelector('.calendar');
 	if (!m) return;
 	if (!opts.date.isvisible) {
+		// Reset position
 		m.style.marginTop = '';
 		m.style.marginLeft = '';
 		return;
 	}
 	var pos = m.getBoundingClientRect();
 	if (w.width < pos.left + pos.width) {
+		// menu is off the right hand of the page
 		m.style.marginLeft = w.width - (pos.left + pos.width) - 20 + 'px';
 	}
 	if (pos.left < 0) {
+		// menu is off the right hand of the page
 		m.style.marginLeft = '20px';
 	}
 	if (w.height < pos.top + pos.height) {
+		// Popup is off the bottom of the page
 		m.style.marginTop = w.height - (pos.top + pos.height) - 20 + 'px';
 	}
 };

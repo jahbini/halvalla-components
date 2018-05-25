@@ -1,4 +1,6 @@
 riot.tag2('rg-ga', '', '', '', function(opts) {
+/* istanbul ignore next */
+'use strict';
 
 (function (i, s, o, g, r, a, m) {
 		i['GoogleAnalyticsObject'] = r;i[r] = i[r] || function () {
