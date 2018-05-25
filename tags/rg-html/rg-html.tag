@@ -3,6 +3,7 @@
     <span class="rg-html"></span>
     <script>
           /* istanbul ignore next */
+          debugger;
           if (!opts.html) opts.html = {} ;
 
           if (!opts.html.content) opts.html.content = this.root._innerHTML ;

@@ -2,6 +2,7 @@ riot.tag2('rg-html', '<span class="rg-html"></span>', '', '', function(opts) {
 /* istanbul ignore next */
 "use strict";
 
+debugger;
 if (!opts.html) opts.html = {};
 
 if (!opts.html.content) opts.html.content = undefined.root._innerHTML;
